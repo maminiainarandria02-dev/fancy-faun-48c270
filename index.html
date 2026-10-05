@@ -441,6 +441,11 @@
   .rem-late{color:var(--danger); font-weight:700;}
   .rem-empty{font-size:12.5px; color:var(--ink-soft); padding:4px 2px;}
   @media(max-width:900px){ .sidebar{border-radius:0 0 22px 22px;} .side-profile{width:auto; flex:1 1 100%;} }
+
+  .linkbtn{background:none; color:var(--rust-dark); font-size:12.5px; font-weight:600; padding:4px 2px; text-decoration:underline; cursor:pointer;}
+  .code-box{font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; letter-spacing:.08em; text-align:center;
+    background:var(--paper); border:1.5px dashed var(--rust); border-radius:14px; padding:16px 10px; margin:12px 0; color:var(--ink); user-select:all; word-break:break-all;}
+  .warn-box{background:#FCE8E6; border:1.5px solid var(--danger); color:var(--stat-red-dark); border-radius:12px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin:10px 0;}
 </style>
 </head>
 <body>
@@ -1776,11 +1781,13 @@ function showAuth(mode){
     <div class="fld"><label>Adresse e-mail</label><input id="au-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
     <div class="fld"><label>Mot de passe</label><input id="au-pwd" type="password" autocomplete="${signup?'new-password':'current-password'}" placeholder="${signup?'6 caractères minimum':''}"></div>
     ${signup ? `<div class="fld"><label>Confirmer le mot de passe</label><input id="au-pwd2" type="password" autocomplete="new-password"></div>` : ''}
+    ${signup ? '' : '<div style="text-align:right;margin-bottom:4px;"><button type="button" class="linkbtn" id="au-forgot">Mot de passe oublié ?</button></div>'}
     <div class="auth-err" id="au-err"></div>
     <button class="btn btn-primary" id="au-go" style="width:100%;">${signup ? 'Créer mon compte' : 'Se connecter'}</button>
     <div class="auth-note">Le compte est enregistré sur cet appareil. En cas d'oubli du mot de passe, il ne peut pas être récupéré : pensez à utiliser « Sauvegarder ».</div>
   `, {cls:'auth-screen', locked:true, box:'auth-box'});
   ov.querySelectorAll('.auth-tabs button').forEach(b=> b.addEventListener('click', ()=> showAuth(b.dataset.m)));
+  const fg = ov.querySelector('#au-forgot'); if(fg) fg.addEventListener('click', showRecovery);
   const err = m => { ov.querySelector('#au-err').textContent = m; };
   const go = async ()=>{
     const email = ov.querySelector('#au-email').value.trim().toLowerCase();
@@ -1813,8 +1820,98 @@ function showAuth(mode){
   const first = ov.querySelector('input'); if(first) first.focus();
 }
 
+function normCode(c){ return String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function genCode(){
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const arr = new Uint8Array(16);
+  if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(arr); else for(let i=0;i<16;i++) arr[i]=Math.floor(Math.random()*256);
+  const ch = Array.from(arr).map(b=>abc[b%abc.length]);
+  return [0,4,8,12].map(i=>ch.slice(i,i+4).join('')).join('-');
+}
+async function issueRecoveryCode(acc){
+  const code = genCode(), salt = uid();
+  updateAccount(acc.id, {recSalt:salt, recoveryHash: await hashPwd(normCode(code), salt)});
+  return code;
+}
+function showCodeDialog(code, then, intro){
+  const ov = openDialog('code-dialog', `
+    <div style="text-align:center;">
+      <div style="font-size:40px;line-height:1;margin-bottom:8px;">🔑</div>
+      <h2>Votre code de récupération</h2>
+      <p class="muted">${intro || 'Ce code permet de retrouver l\'accès à votre compte si vous oubliez votre mot de passe.'}</p>
+    </div>
+    <div class="code-box" id="rc-code">${code}</div>
+    <div class="warn-box">Notez-le ou faites une capture d'écran maintenant : il ne sera <b>plus affiché</b>. Gardez-le en lieu sûr.</div>
+    <div class="row-btns">
+      <button class="btn" id="rc-copy">Copier</button>
+      <button class="btn btn-primary" id="rc-ok">J'ai noté mon code</button>
+    </div>`, {locked:true});
+  ov.querySelector('#rc-copy').addEventListener('click', ()=>{
+    try{ navigator.clipboard.writeText(code).then(()=>toast('Code copié')); }catch(e){ toast('Sélectionnez le code pour le copier'); }
+  });
+  ov.querySelector('#rc-ok').addEventListener('click', ()=>{ ov.remove(); if(then) then(); });
+}
 function afterLogin(acc){
   updateProfileChip();
+  const a = currentAccount() || acc;
+  if(!a.recoveryHash){
+    issueRecoveryCode(a).then(code=> showCodeDialog(code, ()=> continueAfterLogin(currentAccount() || a)));
+  }else{
+    continueAfterLogin(a);
+  }
+}
+
+// --- Récupération du mot de passe ---
+function showRecovery(){
+  const ov = openDialog('auth-screen', `
+    <div class="stamp auth-logo">SC<br></div>
+    <h2>Mot de passe oublié</h2>
+    <p class="muted" style="margin:0 0 12px;">Entrez votre e-mail et le code de récupération reçu à la création du compte, puis choisissez un nouveau mot de passe.</p>
+    <div class="fld"><label>Adresse e-mail</label><input id="rc-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
+    <div class="fld"><label>Code de récupération</label><input id="rc-input" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX-XXXX" style="font-family:'JetBrains Mono',monospace;"></div>
+    <div class="fld"><label>Nouveau mot de passe</label><input id="rc-pwd" type="password" autocomplete="new-password" placeholder="6 caractères minimum"></div>
+    <div class="fld"><label>Confirmer le mot de passe</label><input id="rc-pwd2" type="password" autocomplete="new-password"></div>
+    <div class="auth-err" id="rc-err"></div>
+    <button class="btn btn-primary" id="rc-go" style="width:100%;">Réinitialiser mon mot de passe</button>
+    <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button type="button" class="linkbtn" id="rc-back">← Retour à la connexion</button>
+      <button type="button" class="linkbtn" id="rc-nocode">Je n'ai pas de code</button>
+    </div>`, {cls:'auth-screen', locked:true, box:'auth-box'});
+  const err = m => { ov.querySelector('#rc-err').textContent = m; };
+  ov.querySelector('#rc-back').addEventListener('click', ()=> showAuth('login'));
+  ov.querySelector('#rc-nocode').addEventListener('click', showResetAll);
+  ov.querySelector('#rc-go').addEventListener('click', async ()=>{
+    const email = ov.querySelector('#rc-email').value.trim().toLowerCase();
+    const code = normCode(ov.querySelector('#rc-input').value);
+    const p1 = ov.querySelector('#rc-pwd').value, p2 = ov.querySelector('#rc-pwd2').value;
+    const acc = getAccounts().find(a=>a.email===email);
+    if(!acc) return err('Aucun compte avec cet e-mail sur cet appareil.');
+    if(!acc.recoveryHash) return err('Ce compte n\'a pas de code de récupération. Utilisez « Je n\'ai pas de code ».');
+    if((await hashPwd(code, acc.recSalt)) !== acc.recoveryHash) return err('Code de récupération incorrect.');
+    if(p1.length < 6) return err('Le mot de passe doit contenir au moins 6 caractères.');
+    if(p1 !== p2) return err('Les deux mots de passe ne correspondent pas.');
+    const salt = uid();
+    updateAccount(acc.id, {salt, hash: await hashPwd(p1, salt)});
+    toast('Mot de passe modifié — connectez-vous');
+    showAuth('login');
+  });
+  const f = ov.querySelector('input'); if(f) f.focus();
+}
+function showResetAll(){
+  const ov = openDialog('reset-dialog', `
+    <h2>Pas de code de récupération</h2>
+    <p class="muted">Sans code, le mot de passe ne peut pas être retrouvé. Vous pouvez supprimer le ou les <b>comptes de cet appareil</b> puis en créer un nouveau.</p>
+    <div class="warn-box">Vos <b>chantiers, notes, photos et interventions SAV ne sont pas supprimés</b> : seuls les comptes (e-mail et mot de passe) sont effacés.</div>
+    <div class="row-btns">
+      <button class="btn" id="rs-cancel">Annuler</button>
+      <button class="btn btn-danger" id="rs-ok">Supprimer les comptes</button>
+    </div>`, {locked:true});
+  ov.querySelector('#rs-cancel').addEventListener('click', ()=> ov.remove());
+  ov.querySelector('#rs-ok').addEventListener('click', ()=>{
+    try{ localStorage.removeItem(ACC_KEY); localStorage.removeItem(SES_KEY); }catch(e){}
+    ov.remove(); showAuth('signup'); toast('Comptes supprimés — créez un nouveau compte');
+  });
+}
+function continueAfterLogin(acc){
   if(!acc.welcomed){
     updateAccount(acc.id, {welcomed:true});
     const ov = openDialog('welcome-dialog', `
@@ -1853,6 +1950,7 @@ function showProfile(){
     <div class="auth-err" id="pf-err"></div>
     <button class="btn btn-sm" id="pf-save-pwd">Changer le mot de passe</button>
     <hr>
+    <button class="btn btn-ghost" id="pf-newcode" style="width:100%; margin-bottom:8px;">🔑 Nouveau code de récupération</button>
     <button class="btn btn-ghost" id="pf-reminder" style="width:100%; margin-bottom:8px;">🔔 Rappel de la semaine</button>
     <div class="row-btns" style="margin-top:0;">
       <button class="btn btn-danger" id="pf-logout">Se déconnecter</button>
@@ -1860,6 +1958,14 @@ function showProfile(){
     </div>`);
   ov.querySelector('#pf-close').addEventListener('click', ()=> ov.remove());
   ov.querySelector('#pf-logout').addEventListener('click', logout);
+  ov.querySelector('#pf-newcode').addEventListener('click', async ()=>{
+    const err = ov.querySelector('#pf-err');
+    if(!ov.querySelector('#pf-old').value){ err.textContent = 'Entrez votre mot de passe actuel ci-dessus pour générer un nouveau code.'; return; }
+    if((await hashPwd(ov.querySelector('#pf-old').value, a.salt)) !== a.hash){ err.textContent = 'Mot de passe actuel incorrect.'; return; }
+    err.textContent = '';
+    const code = await issueRecoveryCode(a);
+    ov.remove(); showCodeDialog(code, null, 'Votre ancien code ne fonctionne plus. Voici le nouveau.');
+  });
   ov.querySelector('#pf-reminder').addEventListener('click', ()=>{ ov.remove(); showReminderSettings(); });
   ov.querySelector('#pf-save-name').addEventListener('click', ()=>{
     const n = ov.querySelector('#pf-name').value.trim();
