@@ -535,6 +535,7 @@
   <span id="toast-msg"></span>
 </div>
 
+<script src="supabase.js"></script>
 <script>
 const STORE_KEY = 'chantiers_eliot_data_v1';
 let chantiers = [];
@@ -716,6 +717,7 @@ async function saveAll(){
       alert('⚠ MÉMOIRE PLEINE\n\nLes dernières modifications n\'ont PAS pu être enregistrées (trop de photos).\n\nFais tout de suite « Sauvegarder », puis supprime quelques photos.');
     }
   }
+  scheduleSync();
 }
 
 function exportBackup(){
@@ -1727,22 +1729,29 @@ function closePanel(){
 }
 
 
-// ===== Comptes (enregistrés sur cet appareil) =====
-const ACC_KEY = 'chantiers_comptes_v1', SES_KEY = 'chantiers_session_v1';
-function getAccounts(){ try{ return JSON.parse(localStorage.getItem(ACC_KEY) || '[]'); }catch(e){ return []; } }
-function setAccounts(a){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(a)); return true; }catch(e){ return false; } }
-function currentAccount(){ const id = localStorage.getItem(SES_KEY); return getAccounts().find(a=>a.id===id) || null; }
-function updateAccount(id, patch){
-  const all = getAccounts(); const i = all.findIndex(a=>a.id===id);
-  if(i<0) return null; Object.assign(all[i], patch); setAccounts(all); return all[i];
+// ===== Comptes en ligne (Supabase) + synchronisation =====
+const SB_URL = 'https://mxzaatbegxkncgracisz.supabase.co';
+const SB_KEY = 'sb_publishable_Jep9FvmwNa_5kQjztBUWXg_UNgUjS_F';
+const OWNER_KEY = 'chantiers_owner_v1';
+let sb = null, ME = null, recoveryMode = false;
+let syncTimer = null, syncBusy = false, syncAgain = false, applyingRemote = false;
+let syncState = 'idle', syncErr = '', syncAt = 0, syncErrShown = false;
+
+function currentAccount(){ return ME; }
+function setMe(user, offline){
+  const md = user.user_metadata || {};
+  ME = { id:user.id, email:user.email || '', offline: !!offline,
+    name: md.name || (user.email || '').split('@')[0] || 'vous',
+    welcomed: !!md.welcomed,
+    remind: md.remind || {on:false, planifie:true, encours:true, termine:true, lastWeek:''} };
 }
-async function hashPwd(pwd, salt){
-  const data = new TextEncoder().encode(salt + ':' + pwd);
-  if(window.crypto && crypto.subtle){
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+function updateAccount(id, patch){
+  if(!ME) return null;
+  Object.assign(ME, patch);
+  if(sb && !ME.offline){
+    sb.auth.updateUser({data:{name:ME.name, welcomed:ME.welcomed, remind:ME.remind}}).catch(()=>{});
   }
-  let h = 5381; for(const b of data) h = ((h<<5)+h+b)>>>0; return 'f' + h.toString(16);
+  return ME;
 }
 function initials(name){ return (name||'?').trim().charAt(0).toUpperCase() || '?'; }
 function closeDialog(id){ const e = document.getElementById(id); if(e) e.remove(); }
@@ -1757,17 +1766,139 @@ function openDialog(id, html, opts){
   return ov;
 }
 function updateProfileChip(){
-  const a = currentAccount();
   const av = document.getElementById('sp-avatar'), nm = document.getElementById('sp-name');
   if(!av || !nm) return;
-  av.textContent = a ? initials(a.name) : '?';
-  nm.textContent = a ? a.name : 'Mon profil';
+  av.textContent = ME ? initials(ME.name) : '?';
+  nm.textContent = ME ? ME.name : 'Mon profil';
+}
+function frError(e){
+  const m = String((e && e.message) || e || '').toLowerCase();
+  if(m.includes('invalid login')) return 'E-mail ou mot de passe incorrect.';
+  if(m.includes('already registered') || m.includes('already been registered')) return 'Un compte existe déjà avec cet e-mail.';
+  if(m.includes('not confirmed')) return 'Confirmez d\'abord votre e-mail (lien reçu par message), puis reconnectez-vous.';
+  if(m.includes('rate limit') || m.includes('too many') || m.includes('seconds')) return 'Trop de tentatives. Patientez une minute puis réessayez.';
+  if(m.includes('password') && m.includes('characters')) return 'Mot de passe trop court (6 caractères minimum).';
+  if(m.includes('same password')) return 'Le nouveau mot de passe doit être différent de l\'ancien.';
+  if(m.includes('failed to fetch') || m.includes('network')) return 'Pas de connexion internet.';
+  if(m.includes('expired') || m.includes('invalid') ) return 'Lien expiré ou invalide. Refaites la demande.';
+  return 'Erreur : ' + ((e && e.message) || 'inconnue');
+}
+
+// --- Synchronisation des chantiers ---
+function canon(v){
+  if(Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+  if(v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k=> JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+function hashStr(str){ let h = 5381; for(let i=0;i<str.length;i++) h = ((h<<5)+h+str.charCodeAt(i))|0; return (h>>>0).toString(36) + ':' + str.length; }
+const hashOf = o => hashStr(canon(o));
+function baseKey(){ return 'chantiers_syncbase_' + ME.id; }
+function getBase(){ try{ return JSON.parse(localStorage.getItem(baseKey()) || '{}'); }catch(e){ return {}; } }
+function setBase(b){ try{ localStorage.setItem(baseKey(), JSON.stringify(b)); }catch(e){} }
+function stamp(o){ return (o && (o.updatedAt || o.createdAt)) || ''; }
+function scheduleSync(){
+  if(!sb || !ME || ME.offline || applyingRemote) return;
+  if(syncBusy){ syncAgain = true; return; }
+  clearTimeout(syncTimer); syncTimer = setTimeout(syncAll, 1500);
+}
+async function syncAll(){
+  if(!sb || !ME || ME.offline) return false;
+  if(syncBusy){ syncAgain = true; return false; }
+  syncBusy = true; syncState = 'syncing';
+  try{
+    const { data: rows, error } = await sb.from('chantiers').select('id,data');
+    if(error) throw error;
+    const base = getBase(), nb = {};
+    const remote = new Map(rows.map(r=>[r.id, r.data]));
+    const local = new Map(chantiers.map(c=>[c.id, c]));
+    const ids = new Set([...local.keys(), ...remote.keys()]);
+    const keep = new Map(), up = [], del = [];
+    for(const id of ids){
+      const l = local.get(id), r = remote.get(id);
+      const lh = l ? hashOf(l) : null, rh = r ? hashOf(r) : null, bh = base[id];
+      if(l && r){
+        if(lh === rh) keep.set(id, l);
+        else if(lh === bh) keep.set(id, r);
+        else if(rh === bh){ keep.set(id, l); up.push(id); }
+        else if(stamp(l) >= stamp(r)){ keep.set(id, l); up.push(id); }
+        else keep.set(id, r);
+      }else if(l){
+        if(bh !== undefined && lh === bh){ /* supprimé ailleurs */ }
+        else { keep.set(id, l); up.push(id); }
+      }else{
+        if(bh !== undefined && rh === bh) del.push(id);
+        else keep.set(id, r);
+      }
+    }
+    for(const id of up){
+      const { error: e } = await sb.from('chantiers').upsert({ id, user_id: ME.id, data: keep.get(id), updated_at: new Date().toISOString() }, { onConflict:'user_id,id' });
+      if(e) throw e;
+    }
+    for(const id of del){
+      const { error: e } = await sb.from('chantiers').delete().eq('id', id);
+      if(e) throw e;
+    }
+    keep.forEach((v,id)=>{ nb[id] = hashOf(v); });
+    const order = chantiers.filter(c=>keep.has(c.id)).map(c=>keep.get(c.id));
+    keep.forEach((v,id)=>{ if(!local.has(id)) order.push(v); });
+    const changed = canon(order) !== canon(chantiers);
+    setBase(nb);
+    if(changed){
+      applyingRemote = true;
+      chantiers = order;
+      try{ await saveAll(); }finally{ applyingRemote = false; }
+      try{ render(); }catch(e){}
+    }
+    syncState = 'ok'; syncErr = ''; syncAt = Date.now(); syncErrShown = false;
+    return true;
+  }catch(e){
+    syncState = 'error'; syncErr = frError(e);
+    if(!syncErrShown){ syncErrShown = true; toast('Synchronisation impossible : ' + syncErr); }
+    return false;
+  }finally{
+    syncBusy = false;
+    if(syncAgain){ syncAgain = false; scheduleSync(); }
+  }
+}
+function syncLabel(){
+  if(!ME) return '';
+  if(ME.offline) return 'Hors ligne — la synchronisation reprendra à la prochaine connexion.';
+  if(syncState === 'syncing') return 'Synchronisation en cours…';
+  if(syncState === 'error') return '⚠ ' + syncErr;
+  if(syncAt) return '✓ Synchronisé à ' + new Date(syncAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  return 'En attente de synchronisation.';
+}
+
+// --- Session ---
+function initSupabase(){
+  sb = window.supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'PASSWORD_RECOVERY'){ recoveryMode = true; setTimeout(showNewPassword, 0); return; }
+    if(event === 'SIGNED_OUT'){ ME = null; updateProfileChip(); return; }
+    if(event === 'SIGNED_IN' && session && session.user && !recoveryMode && (!ME || ME.id !== session.user.id)){
+      setTimeout(()=> onSession(session.user), 0);
+    }
+  });
+}
+async function onSession(user, offline){
+  if(ME && ME.id === user.id) return;
+  setMe(user, offline);
+  try{
+    const owner = localStorage.getItem(OWNER_KEY);
+    if(owner && owner !== user.id){
+      chantiers = []; localStorage.setItem(STORE_KEY, '[]'); try{ render(); }catch(e){}
+    }
+    localStorage.setItem(OWNER_KEY, user.id);
+  }catch(e){}
+  closeDialog('auth-screen');
+  updateProfileChip();
+  if(!ME.offline) await Promise.race([syncAll(), new Promise(r=>setTimeout(r,5000))]);
+  afterLogin(ME);
 }
 
 // --- Écran de connexion / création de compte ---
-function showAuth(mode){
-  const hasAcc = getAccounts().length > 0;
-  mode = mode || (hasAcc ? 'login' : 'signup');
+function showAuth(mode, notice){
+  mode = mode || 'login';
   const signup = mode === 'signup';
   const ov = openDialog('auth-screen', `
     <div class="stamp auth-logo">SC<br></div>
@@ -1777,6 +1908,7 @@ function showAuth(mode){
       <button type="button" data-m="login" class="${signup?'':'on'}">Se connecter</button>
       <button type="button" data-m="signup" class="${signup?'on':''}">Créer un compte</button>
     </div>
+    ${notice ? `<div class="warn-box" style="background:#E3F5EA;border-color:var(--stat-green);color:var(--stat-green-dark);text-align:left;">${notice}</div>` : ''}
     ${signup ? `<div class="fld"><label>Prénom</label><input id="au-name" autocomplete="given-name" placeholder="Eliot"></div>` : ''}
     <div class="fld"><label>Adresse e-mail</label><input id="au-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
     <div class="fld"><label>Mot de passe</label><input id="au-pwd" type="password" autocomplete="${signup?'new-password':'current-password'}" placeholder="${signup?'6 caractères minimum':''}"></div>
@@ -1784,153 +1916,130 @@ function showAuth(mode){
     ${signup ? '' : '<div style="text-align:right;margin-bottom:4px;"><button type="button" class="linkbtn" id="au-forgot">Mot de passe oublié ?</button></div>'}
     <div class="auth-err" id="au-err"></div>
     <button class="btn btn-primary" id="au-go" style="width:100%;">${signup ? 'Créer mon compte' : 'Se connecter'}</button>
-    <div class="auth-note">Le compte est enregistré sur cet appareil. En cas d'oubli du mot de passe, il ne peut pas être récupéré : pensez à utiliser « Sauvegarder ».</div>
+    <div class="auth-note">Votre compte et vos chantiers sont enregistrés en ligne : vous les retrouvez sur tous vos appareils.</div>
   `, {cls:'auth-screen', locked:true, box:'auth-box'});
   ov.querySelectorAll('.auth-tabs button').forEach(b=> b.addEventListener('click', ()=> showAuth(b.dataset.m)));
-  const fg = ov.querySelector('#au-forgot'); if(fg) fg.addEventListener('click', showRecovery);
+  const fg = ov.querySelector('#au-forgot'); if(fg) fg.addEventListener('click', ()=> showForgot());
   const err = m => { ov.querySelector('#au-err').textContent = m; };
+  const btn = ov.querySelector('#au-go');
   const go = async ()=>{
+    if(!sb) return err('Service en ligne indisponible. Rechargez la page.');
     const email = ov.querySelector('#au-email').value.trim().toLowerCase();
     const pwd = ov.querySelector('#au-pwd').value;
     if(!/^\S+@\S+\.\S+$/.test(email)) return err('Adresse e-mail invalide.');
-    if(signup){
-      const name = ov.querySelector('#au-name').value.trim();
-      const pwd2 = ov.querySelector('#au-pwd2').value;
-      if(!name) return err('Entrez votre prénom.');
-      if(pwd.length < 6) return err('Le mot de passe doit contenir au moins 6 caractères.');
-      if(pwd !== pwd2) return err('Les deux mots de passe ne correspondent pas.');
-      const all = getAccounts();
-      if(all.some(a=>a.email===email)) return err('Un compte existe déjà avec cet e-mail.');
-      const salt = uid();
-      const acc = { id: uid(), name, email, salt, hash: await hashPwd(pwd, salt), createdAt: new Date().toISOString(),
-        welcomed:false, remind:{ on:false, planifie:true, encours:true, termine:true, lastWeek:'' } };
-      all.push(acc);
-      if(!setAccounts(all)) return err('Mémoire pleine : impossible de créer le compte.');
-      localStorage.setItem(SES_KEY, acc.id);
-      closeDialog('auth-screen'); afterLogin(acc);
-    }else{
-      const acc = getAccounts().find(a=>a.email===email);
-      if(!acc || (await hashPwd(pwd, acc.salt)) !== acc.hash) return err('E-mail ou mot de passe incorrect.');
-      localStorage.setItem(SES_KEY, acc.id);
-      closeDialog('auth-screen'); afterLogin(acc);
+    err('');
+    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Patientez…';
+    try{
+      if(signup){
+        const name = ov.querySelector('#au-name').value.trim();
+        const pwd2 = ov.querySelector('#au-pwd2').value;
+        if(!name) throw {message:'Entrez votre prénom.', raw:true};
+        if(pwd.length < 6) throw {message:'Le mot de passe doit contenir au moins 6 caractères.', raw:true};
+        if(pwd !== pwd2) throw {message:'Les deux mots de passe ne correspondent pas.', raw:true};
+        const { data, error } = await sb.auth.signUp({ email, password: pwd,
+          options:{ data:{ name, welcomed:false }, emailRedirectTo: location.origin + location.pathname } });
+        if(error) throw error;
+        if(data.user && data.user.identities && data.user.identities.length === 0) throw {message:'Un compte existe déjà avec cet e-mail.', raw:true};
+        if(data.session){ await onSession(data.session.user); return; }
+        showAuth('login', 'Compte créé ! Un e-mail de confirmation vient d\'être envoyé à <b>' + escapeHtml(email) + '</b>. Cliquez sur le lien, puis connectez-vous.');
+        return;
+      }else{
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+        if(error) throw error;
+        await onSession(data.user);
+        return;
+      }
+    }catch(e){
+      err(e && e.raw ? e.message : frError(e));
     }
+    btn.disabled = false; btn.textContent = label;
   };
-  ov.querySelector('#au-go').addEventListener('click', go);
+  btn.addEventListener('click', go);
   ov.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
   const first = ov.querySelector('input'); if(first) first.focus();
 }
 
-function normCode(c){ return String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
-function genCode(){
-  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const arr = new Uint8Array(16);
-  if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(arr); else for(let i=0;i<16;i++) arr[i]=Math.floor(Math.random()*256);
-  const ch = Array.from(arr).map(b=>abc[b%abc.length]);
-  return [0,4,8,12].map(i=>ch.slice(i,i+4).join('')).join('-');
-}
-async function issueRecoveryCode(acc){
-  const code = genCode(), salt = uid();
-  updateAccount(acc.id, {recSalt:salt, recoveryHash: await hashPwd(normCode(code), salt)});
-  return code;
-}
-function showCodeDialog(code, then, intro){
-  const ov = openDialog('code-dialog', `
-    <div style="text-align:center;">
-      <div style="font-size:40px;line-height:1;margin-bottom:8px;">🔑</div>
-      <h2>Votre code de récupération</h2>
-      <p class="muted">${intro || 'Ce code permet de retrouver l\'accès à votre compte si vous oubliez votre mot de passe.'}</p>
-    </div>
-    <div class="code-box" id="rc-code">${code}</div>
-    <div class="warn-box">Notez-le ou faites une capture d'écran maintenant : il ne sera <b>plus affiché</b>. Gardez-le en lieu sûr.</div>
-    <div class="row-btns">
-      <button class="btn" id="rc-copy">Copier</button>
-      <button class="btn btn-primary" id="rc-ok">J'ai noté mon code</button>
-    </div>`, {locked:true});
-  ov.querySelector('#rc-copy').addEventListener('click', ()=>{
-    try{ navigator.clipboard.writeText(code).then(()=>toast('Code copié')); }catch(e){ toast('Sélectionnez le code pour le copier'); }
-  });
-  ov.querySelector('#rc-ok').addEventListener('click', ()=>{ ov.remove(); if(then) then(); });
-}
-function afterLogin(acc){
-  updateProfileChip();
-  const a = currentAccount() || acc;
-  if(!a.recoveryHash){
-    issueRecoveryCode(a).then(code=> showCodeDialog(code, ()=> continueAfterLogin(currentAccount() || a)));
-  }else{
-    continueAfterLogin(a);
-  }
-}
-
-// --- Récupération du mot de passe ---
-function showRecovery(){
+// --- Mot de passe oublié (e-mail) ---
+function showForgot(){
   const ov = openDialog('auth-screen', `
     <div class="stamp auth-logo">SC<br></div>
     <h2>Mot de passe oublié</h2>
-    <p class="muted" style="margin:0 0 12px;">Entrez votre e-mail et le code de récupération reçu à la création du compte, puis choisissez un nouveau mot de passe.</p>
-    <div class="fld"><label>Adresse e-mail</label><input id="rc-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
-    <div class="fld"><label>Code de récupération</label><input id="rc-input" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX-XXXX" style="font-family:'JetBrains Mono',monospace;"></div>
-    <div class="fld"><label>Nouveau mot de passe</label><input id="rc-pwd" type="password" autocomplete="new-password" placeholder="6 caractères minimum"></div>
-    <div class="fld"><label>Confirmer le mot de passe</label><input id="rc-pwd2" type="password" autocomplete="new-password"></div>
-    <div class="auth-err" id="rc-err"></div>
-    <button class="btn btn-primary" id="rc-go" style="width:100%;">Réinitialiser mon mot de passe</button>
-    <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap;">
-      <button type="button" class="linkbtn" id="rc-back">← Retour à la connexion</button>
-      <button type="button" class="linkbtn" id="rc-nocode">Je n'ai pas de code</button>
-    </div>`, {cls:'auth-screen', locked:true, box:'auth-box'});
-  const err = m => { ov.querySelector('#rc-err').textContent = m; };
-  ov.querySelector('#rc-back').addEventListener('click', ()=> showAuth('login'));
-  ov.querySelector('#rc-nocode').addEventListener('click', showResetAll);
-  ov.querySelector('#rc-go').addEventListener('click', async ()=>{
-    const email = ov.querySelector('#rc-email').value.trim().toLowerCase();
-    const code = normCode(ov.querySelector('#rc-input').value);
-    const p1 = ov.querySelector('#rc-pwd').value, p2 = ov.querySelector('#rc-pwd2').value;
-    const acc = getAccounts().find(a=>a.email===email);
-    if(!acc) return err('Aucun compte avec cet e-mail sur cet appareil.');
-    if(!acc.recoveryHash) return err('Ce compte n\'a pas de code de récupération. Utilisez « Je n\'ai pas de code ».');
-    if((await hashPwd(code, acc.recSalt)) !== acc.recoveryHash) return err('Code de récupération incorrect.');
+    <p class="muted" style="margin:0 0 12px;">Entrez l'e-mail de votre compte : nous vous envoyons un lien pour choisir un nouveau mot de passe.</p>
+    <div class="fld"><label>Adresse e-mail</label><input id="fg-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
+    <div class="auth-err" id="fg-err"></div>
+    <button class="btn btn-primary" id="fg-go" style="width:100%;">Envoyer le lien</button>
+    <div style="margin-top:10px;"><button type="button" class="linkbtn" id="fg-back">← Retour à la connexion</button></div>`,
+    {cls:'auth-screen', locked:true, box:'auth-box'});
+  const err = m => { ov.querySelector('#fg-err').textContent = m; };
+  ov.querySelector('#fg-back').addEventListener('click', ()=> showAuth('login'));
+  const btn = ov.querySelector('#fg-go');
+  const go = async ()=>{
+    const email = ov.querySelector('#fg-email').value.trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(email)) return err('Adresse e-mail invalide.');
+    err(''); btn.disabled = true; btn.textContent = 'Envoi…';
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if(error){ err(frError(error)); btn.disabled = false; btn.textContent = 'Envoyer le lien'; return; }
+    showAuth('login', 'Si un compte existe pour <b>' + escapeHtml(email) + '</b>, un e-mail avec le lien de réinitialisation vient d\'être envoyé. Pensez à vérifier les courriers indésirables.');
+  };
+  btn.addEventListener('click', go);
+  ov.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+  ov.querySelector('#fg-email').focus();
+}
+function showNewPassword(){
+  const ov = openDialog('auth-screen', `
+    <div class="stamp auth-logo">SC<br></div>
+    <h2>Nouveau mot de passe</h2>
+    <p class="muted" style="margin:0 0 12px;">Choisissez un nouveau mot de passe pour votre compte.</p>
+    <div class="fld"><label>Nouveau mot de passe</label><input id="np-1" type="password" autocomplete="new-password" placeholder="6 caractères minimum"></div>
+    <div class="fld"><label>Confirmer le mot de passe</label><input id="np-2" type="password" autocomplete="new-password"></div>
+    <div class="auth-err" id="np-err"></div>
+    <button class="btn btn-primary" id="np-go" style="width:100%;">Enregistrer</button>`,
+    {cls:'auth-screen', locked:true, box:'auth-box'});
+  const err = m => { ov.querySelector('#np-err').textContent = m; };
+  const btn = ov.querySelector('#np-go');
+  const go = async ()=>{
+    const p1 = ov.querySelector('#np-1').value, p2 = ov.querySelector('#np-2').value;
     if(p1.length < 6) return err('Le mot de passe doit contenir au moins 6 caractères.');
     if(p1 !== p2) return err('Les deux mots de passe ne correspondent pas.');
-    const salt = uid();
-    updateAccount(acc.id, {salt, hash: await hashPwd(p1, salt)});
-    toast('Mot de passe modifié — connectez-vous');
-    showAuth('login');
-  });
-  const f = ov.querySelector('input'); if(f) f.focus();
+    btn.disabled = true; btn.textContent = 'Patientez…';
+    const { data, error } = await sb.auth.updateUser({ password: p1 });
+    if(error){ err(frError(error)); btn.disabled = false; btn.textContent = 'Enregistrer'; return; }
+    recoveryMode = false;
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    toast('Mot de passe modifié');
+    await onSession(data.user);
+  };
+  btn.addEventListener('click', go);
+  ov.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+  ov.querySelector('#np-1').focus();
 }
-function showResetAll(){
-  const ov = openDialog('reset-dialog', `
-    <h2>Pas de code de récupération</h2>
-    <p class="muted">Sans code, le mot de passe ne peut pas être retrouvé. Vous pouvez supprimer le ou les <b>comptes de cet appareil</b> puis en créer un nouveau.</p>
-    <div class="warn-box">Vos <b>chantiers, notes, photos et interventions SAV ne sont pas supprimés</b> : seuls les comptes (e-mail et mot de passe) sont effacés.</div>
-    <div class="row-btns">
-      <button class="btn" id="rs-cancel">Annuler</button>
-      <button class="btn btn-danger" id="rs-ok">Supprimer les comptes</button>
-    </div>`, {locked:true});
-  ov.querySelector('#rs-cancel').addEventListener('click', ()=> ov.remove());
-  ov.querySelector('#rs-ok').addEventListener('click', ()=>{
-    try{ localStorage.removeItem(ACC_KEY); localStorage.removeItem(SES_KEY); }catch(e){}
-    ov.remove(); showAuth('signup'); toast('Comptes supprimés — créez un nouveau compte');
-  });
-}
+
+function afterLogin(acc){ updateProfileChip(); continueAfterLogin(acc); }
+function niceName(n){ n=(n||'').trim(); return n ? n.charAt(0).toUpperCase()+n.slice(1) : n; }
 function continueAfterLogin(acc){
   if(!acc.welcomed){
     updateAccount(acc.id, {welcomed:true});
     const ov = openDialog('welcome-dialog', `
       <div style="text-align:center;">
         <div style="font-size:46px; line-height:1; margin-bottom:10px;">👋</div>
-        <h2>Bonjour ${escapeHtml(acc.name)}, comment ça va ?</h2>
+        <h2>Bonjour ${escapeHtml(niceName(acc.name))}, comment ça va ?</h2>
         <p class="muted">Ravi de vous accueillir. Votre espace est prêt : vous pouvez créer vos chantiers, suivre le SAV et activer le rappel de la semaine.</p>
         <button class="btn btn-primary" id="w-ok" style="width:100%;">Très bien, merci !</button>
       </div>`, {locked:true});
     ov.querySelector('#w-ok').addEventListener('click', ()=>{ ov.remove(); maybeShowWeeklyReminder(); });
   }else{
+    toast('Bonjour ' + niceName(acc.name) + ' 👋');
     maybeShowWeeklyReminder();
   }
 }
 
-function logout(){
-  localStorage.removeItem(SES_KEY);
+async function logout(){
+  if(sb && ME && !ME.offline){ try{ await Promise.race([syncAll(), new Promise(r=>setTimeout(r,4000))]); }catch(e){} }
+  try{ if(sb) await sb.auth.signOut(); }catch(e){}
+  ME = null; syncState = 'idle'; syncAt = 0;
   closeDialog('profile-dialog'); closeDialog('reminder-dialog'); closeDialog('weekly-dialog');
-  closePanel(); updateProfileChip(); showAuth('login');
+  try{ closePanel(); }catch(e){}
+  updateProfileChip(); showAuth('login');
 }
 
 // --- Espace profil ---
@@ -1940,8 +2049,11 @@ function showProfile(){
     <div style="text-align:center;">
       <div class="avatar-big">${escapeHtml(initials(a.name))}</div>
       <h2>Mon profil</h2>
-      <p class="muted" style="margin-bottom:6px;">${escapeHtml(a.email)}</p>
+      <p class="muted" style="margin-bottom:2px;">${escapeHtml(a.email)}</p>
+      <p class="muted" id="pf-sync" style="margin-bottom:6px;font-size:11.5px;">${escapeHtml(syncLabel())}</p>
     </div>
+    <button class="btn btn-ghost btn-sm" id="pf-sync-now" style="width:100%;margin-bottom:6px;">↻ Synchroniser maintenant</button>
+    <hr>
     <div class="fld"><label>Prénom</label><input id="pf-name" value="${escapeHtml(a.name)}"></div>
     <button class="btn btn-sm" id="pf-save-name">Enregistrer le prénom</button>
     <hr>
@@ -1950,7 +2062,6 @@ function showProfile(){
     <div class="auth-err" id="pf-err"></div>
     <button class="btn btn-sm" id="pf-save-pwd">Changer le mot de passe</button>
     <hr>
-    <button class="btn btn-ghost" id="pf-newcode" style="width:100%; margin-bottom:8px;">🔑 Nouveau code de récupération</button>
     <button class="btn btn-ghost" id="pf-reminder" style="width:100%; margin-bottom:8px;">🔔 Rappel de la semaine</button>
     <div class="row-btns" style="margin-top:0;">
       <button class="btn btn-danger" id="pf-logout">Se déconnecter</button>
@@ -1958,15 +2069,11 @@ function showProfile(){
     </div>`);
   ov.querySelector('#pf-close').addEventListener('click', ()=> ov.remove());
   ov.querySelector('#pf-logout').addEventListener('click', logout);
-  ov.querySelector('#pf-newcode').addEventListener('click', async ()=>{
-    const err = ov.querySelector('#pf-err');
-    if(!ov.querySelector('#pf-old').value){ err.textContent = 'Entrez votre mot de passe actuel ci-dessus pour générer un nouveau code.'; return; }
-    if((await hashPwd(ov.querySelector('#pf-old').value, a.salt)) !== a.hash){ err.textContent = 'Mot de passe actuel incorrect.'; return; }
-    err.textContent = '';
-    const code = await issueRecoveryCode(a);
-    ov.remove(); showCodeDialog(code, null, 'Votre ancien code ne fonctionne plus. Voici le nouveau.');
-  });
   ov.querySelector('#pf-reminder').addEventListener('click', ()=>{ ov.remove(); showReminderSettings(); });
+  ov.querySelector('#pf-sync-now').addEventListener('click', async ()=>{
+    const el = ov.querySelector('#pf-sync'); el.textContent = 'Synchronisation en cours…';
+    await syncAll(); el.textContent = syncLabel();
+  });
   ov.querySelector('#pf-save-name').addEventListener('click', ()=>{
     const n = ov.querySelector('#pf-name').value.trim();
     if(!n) return;
@@ -1975,10 +2082,12 @@ function showProfile(){
   ov.querySelector('#pf-save-pwd').addEventListener('click', async ()=>{
     const err = ov.querySelector('#pf-err');
     const oldP = ov.querySelector('#pf-old').value, newP = ov.querySelector('#pf-new').value;
-    if((await hashPwd(oldP, a.salt)) !== a.hash){ err.textContent = 'Mot de passe actuel incorrect.'; return; }
+    if(a.offline){ err.textContent = 'Connexion internet nécessaire.'; return; }
     if(newP.length < 6){ err.textContent = 'Le nouveau mot de passe doit contenir au moins 6 caractères.'; return; }
-    const salt = uid();
-    updateAccount(a.id, {salt, hash: await hashPwd(newP, salt)});
+    const chk = await sb.auth.signInWithPassword({ email:a.email, password:oldP });
+    if(chk.error){ err.textContent = 'Mot de passe actuel incorrect.'; return; }
+    const { error } = await sb.auth.updateUser({ password:newP });
+    if(error){ err.textContent = frError(error); return; }
     err.textContent = ''; ov.querySelector('#pf-old').value=''; ov.querySelector('#pf-new').value='';
     toast('Mot de passe modifié');
   });
@@ -2056,10 +2165,33 @@ function showReminderSettings(){
 document.getElementById('btn-profile').addEventListener('click', showProfile);
 document.getElementById('btn-reminder').addEventListener('click', showReminderSettings);
 
-function startApp(){
-  const a = currentAccount();
-  if(a) afterLogin(a); else showAuth();
+
+async function startApp(){
+  if(!window.supabase || !window.supabase.createClient){
+    showAuth('login', 'Le service en ligne n\'a pas pu se charger. Vérifiez votre connexion puis rechargez la page.');
+    return;
+  }
+  const hash = location.hash || '';
+  if(/type=recovery/.test(hash)) recoveryMode = true;
+  initSupabase();
+  let session = null;
+  try{ const r = await sb.auth.getSession(); session = r.data && r.data.session; }catch(e){}
+  if(recoveryMode){
+    if(session) showNewPassword(); else { recoveryMode = false; showAuth('login', 'Lien expiré ou invalide. Refaites une demande « Mot de passe oublié ».'); }
+    return;
+  }
+  if(session && session.user){ await onSession(session.user); return; }
+  // Hors ligne avec une session déjà enregistrée : on laisse entrer
+  try{
+    if(!navigator.onLine){
+      const key = Object.keys(localStorage).find(k=>/^sb-.*-auth-token$/.test(k));
+      const st = key ? JSON.parse(localStorage.getItem(key)) : null;
+      if(st && st.user){ await onSession(st.user, true); return; }
+    }
+  }catch(e){}
+  showAuth('login');
 }
+window.addEventListener('online', ()=>{ if(ME && ME.offline){ ME = null; startApp(); } else scheduleSync(); });
 
 loadAll().then(startApp);
 

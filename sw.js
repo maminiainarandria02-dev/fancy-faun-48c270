@@ -1,8 +1,8 @@
 // Change ce numéro à chaque mise à jour de l'application pour forcer le rafraîchissement
-const CACHE = 'chantiers-v6';
+const CACHE = 'chantiers-v8';
 const FILES = [
   './', './index.html', './manifest.json',
-  './jspdf.umd.min.js',
+  './jspdf.umd.min.js', './supabase.js',
   './inter-latin-wght-normal.woff2',
   './space-grotesk-latin-wght-normal.woff2',
   './jetbrains-mono-latin-wght-normal.woff2',
