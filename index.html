@@ -2,30 +2,40 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Suivi de chantier & installation</title>
+<title>Suivi de chantier et installation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="theme-color" content="#F3F6FB">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suivi de chantier">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="jspdf.umd.min.js"></script>
 <style>
+  @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url('inter-latin-wght-normal.woff2') format('woff2');}
+  @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:300 700;font-display:swap;src:url('space-grotesk-latin-wght-normal.woff2') format('woff2');}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;font-display:swap;src:url('jetbrains-mono-latin-wght-normal.woff2') format('woff2');}
+
   :root{
-    --ink:#E8F1FA;
-    --paper:#0A1420;
-    --paper-2:#101E2E;
-    --line:#28405A;
-    --rust:#4FA3E8;
-    --rust-dark:#7DBEF2;
-    --ochre:#4FA3E8;
-    --moss:#2CB5A6;
-    --moss-dark:#5FD6C8;
-    --ink-soft:#8FB0CC;
-    --white:#14202E;
-    --danger:#F0564A;
-    --shadow: 0 2px 0 rgba(0,0,0,0.35);
-    --stat-green:#37B96A; --stat-green-dark:#7BE3A2;
-    --stat-indigo:#7C77F5; --stat-indigo-dark:#A6A2FF;
-    --stat-red:#F0564A; --stat-red-dark:#FF9990;
-    --stat-blue:#4F8FF0; --stat-blue-dark:#9EC2FF;
+    --ink:#0F2547;
+    --paper:#F3F6FB;
+    --paper-2:#FFFFFF;
+    --line:#C9D5E6;
+    --rust:#1F6FD1;
+    --rust-dark:#1558A8;
+    --ochre:#1F6FD1;
+    --moss:#12907F;
+    --moss-dark:#0B6E61;
+    --ink-soft:#5B6F8C;
+    --white:#FFFFFF;
+    --danger:#D93A2E;
+    --shadow: 0 2px 0 rgba(15,37,71,0.12);
+    --stat-green:#2E9E5B; --stat-green-dark:#176B3A;
+    --stat-indigo:#6A64E0; --stat-indigo-dark:#4743B5;
+    --stat-red:#D93A2E; --stat-red-dark:#A8261C;
+    --stat-blue:#2F7BE0; --stat-blue-dark:#1A55A8;
     --swoop-planifie:var(--stat-green);
     --swoop-planifie-dark:var(--stat-green-dark);
     --swoop-encours:var(--stat-red);
@@ -183,9 +193,9 @@
     font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600; padding:3px 9px;
     border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:0.04em;
   }
-  .st-planifie{background:#123B26; color:var(--stat-green-dark); border:1px solid var(--stat-green);}
-  .st-encours{background:#3B1A1A; color:var(--stat-red-dark); border:1px solid var(--stat-red);}
-  .st-termine{background:#152A44; color:var(--stat-blue-dark); border:1px solid var(--stat-blue);}
+  .st-planifie{background:#E3F5EA; color:var(--stat-green-dark); border:1px solid var(--stat-green);}
+  .st-encours{background:#FCE8E6; color:var(--stat-red-dark); border:1px solid var(--stat-red);}
+  .st-termine{background:#E4EEFC; color:var(--stat-blue-dark); border:1px solid var(--stat-blue);}
   .card-meta{font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
   .card-meta b{color:var(--ink); font-weight:600;}
   .card-foot{
@@ -246,9 +256,9 @@
     transition:transform .15s ease; position:relative; overflow:hidden;
   }
   .status-opt:hover{transform:scale(1.095);}
-  .status-opt.sel-planifie.on{background:#123B26; border-color:var(--stat-green); color:var(--stat-green-dark);}
-  .status-opt.sel-encours.on{background:#3B1A1A; border-color:var(--stat-red); color:var(--stat-red-dark);}
-  .status-opt.sel-termine.on{background:#152A44; border-color:var(--stat-blue); color:var(--stat-blue-dark);}
+  .status-opt.sel-planifie.on{background:#E3F5EA; border-color:var(--stat-green); color:var(--stat-green-dark);}
+  .status-opt.sel-encours.on{background:#FCE8E6; border-color:var(--stat-red); color:var(--stat-red-dark);}
+  .status-opt.sel-termine.on{background:#E4EEFC; border-color:var(--stat-blue); color:var(--stat-blue-dark);}
 
   .entry-list{display:flex; flex-direction:column; gap:8px;}
   .entry{
@@ -263,15 +273,15 @@
     font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; padding:2px 8px;
     border-radius:20px; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer;
   }
-  .sav-ouvert{background:#3B1A1A; color:var(--danger); border:1px solid var(--danger);}
-  .sav-resolu{background:#0F332F; color:var(--moss-dark); border:1px solid var(--moss);}
+  .sav-ouvert{background:#FCE8E6; color:var(--danger); border:1px solid var(--danger);}
+  .sav-resolu{background:#DFF4F1; color:var(--moss-dark); border:1px solid var(--moss);}
   .entry-intervenant{
     font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-soft);
     background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:2px 9px;
   }
   .card-sav-flag{
     position:absolute; top:12px; right:12px; font-family:'JetBrains Mono',monospace; font-size:9.5px;
-    font-weight:700; padding:3px 9px; border-radius:20px; background:#3B1A1A; color:var(--danger);
+    font-weight:700; padding:3px 9px; border-radius:20px; background:#FCE8E6; color:var(--danger);
     border:1px solid var(--danger); text-transform:uppercase; letter-spacing:0.03em;
   }
 
@@ -429,7 +439,7 @@
   <main class="app">
     <header class="topbar">
       <div class="brand-mark">
-        <h1>Suivi de chantier &amp; installation</h1>
+        <h1>Suivi de chantier et installation</h1>
       </div>
       <input class="search" id="search" placeholder="Rechercher : client, site, localisation…" style="max-width:360px;">
     </header>
@@ -635,7 +645,13 @@ async function saveAll(){
   if(hasCloudStorage){
     try{ await window.storage.set(STORE_KEY, json, false); }catch(e){}
   }
-  try{ localStorage.setItem(STORE_KEY, json); }catch(e){}
+  try{
+    localStorage.setItem(STORE_KEY, json);
+  }catch(e){
+    if(!(fileLinkState === 'linked' && fileHandle)){
+      alert('⚠ MÉMOIRE PLEINE\n\nLes dernières modifications n\'ont PAS pu être enregistrées (trop de photos).\n\nFais tout de suite « Sauvegarder », puis supprime quelques photos.');
+    }
+  }
 }
 
 function exportBackup(){
@@ -1313,7 +1329,7 @@ function openPanel(id, isNew){
         <div class="section">
           <div class="section-label">Photos &amp; documents</div>
           <div class="doc-grid" id="doc-grid"></div>
-          <div class="upload-zone" id="upload-zone">Cliquer pour ajouter une photo ou un document (image, conservé dans le navigateur)</div>
+          <div class="upload-zone" id="upload-zone">Cliquer pour ajouter une photo (réduite automatiquement, conservée dans l'appareil)</div>
           <input type="file" id="file-input" accept="image/*" style="display:none" multiple>
         </div>
 
@@ -1379,11 +1395,9 @@ function openPanel(id, isNew){
   document.getElementById('file-input').addEventListener('change', async (e)=>{
     const files = Array.from(e.target.files);
     for(const file of files){
-      if(file.size > 1.5*1024*1024){
-        toast(file.name + ' trop lourd (max ~1.5 Mo)');
-        continue;
-      }
-      const dataUrl = await fileToDataUrl(file);
+      let dataUrl;
+      try{ dataUrl = await compressImage(file, 1280, 0.7); }
+      catch(err){ toast(file.name + ' : image illisible'); continue; }
       c.docs = c.docs || [];
       c.docs.push({ id: uid(), name: file.name, data: dataUrl, addedAt: todayISO() });
     }
@@ -1513,6 +1527,25 @@ function renderDocs(c){
   });
 }
 
+function compressImage(file, maxSide, quality){
+  return new Promise((resolve,reject)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = Math.min(1, maxSide / Math.max(w,h));
+      w = Math.round(w*ratio); h = Math.round(h*ratio);
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      resolve(cv.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('image')); };
+    img.src = url;
+  });
+}
+
 function fileToDataUrl(file){
   return new Promise((resolve,reject)=>{
     const r = new FileReader();
@@ -1630,6 +1663,10 @@ function closePanel(){
 }
 
 loadAll();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
 
 // Petite animation de défilement lumineux à chaque clic sur un bouton/option (n'affecte pas la taille du texte)
 document.addEventListener('click', (e)=>{
