@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>Suivi de chantier et installation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#F3F6FB">
+<meta name="theme-color" content="#272622">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('chantiers_theme')||'dark';}catch(e){document.documentElement.dataset.theme='dark';}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,29 +20,55 @@
   @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;font-display:swap;src:url('jetbrains-mono-latin-wght-normal.woff2') format('woff2');}
 
   :root{
-    --ink:#0F2547;
-    --paper:#F3F6FB;
-    --paper-2:#FFFFFF;
-    --line:#C9D5E6;
-    --rust:#1F6FD1;
-    --rust-dark:#1558A8;
-    --ochre:#1F6FD1;
-    --moss:#12907F;
-    --moss-dark:#0B6E61;
-    --ink-soft:#5B6F8C;
-    --white:#FFFFFF;
-    --danger:#D93A2E;
-    --shadow: 0 2px 0 rgba(15,37,71,0.12);
-    --stat-green:#2E9E5B; --stat-green-dark:#176B3A;
-    --stat-indigo:#6A64E0; --stat-indigo-dark:#4743B5;
-    --stat-red:#D93A2E; --stat-red-dark:#A8261C;
-    --stat-blue:#2F7BE0; --stat-blue-dark:#1A55A8;
+    /* Thème Victron VRM (sombre) */
+    --ink:#EDECE8;
+    --paper:#272622;
+    --paper-2:#2F2E2A;
+    --white:#383733;
+    --line:#4B4A45;
+    --ink-soft:#A8A69E;
+    --rust:#30AFFF;
+    --rust-dark:#86D0FF;
+    --ochre:#30AFFF;
+    --moss:#3FC1B0;
+    --moss-dark:#7BE0D3;
+    --danger:#F26B5E;
+    --on-accent:#0B2233;
+    --shadow: 0 2px 0 rgba(0,0,0,0.35);
+    --stat-green:#4CC38A; --stat-green-dark:#8FE3B8;
+    --stat-indigo:#8A86F0; --stat-indigo-dark:#B7B4FF;
+    --stat-red:#F26B5E; --stat-red-dark:#FFA399;
+    --stat-blue:#4DB3F5; --stat-blue-dark:#9ED6FB;
+    --tint-green:#1F3A2D; --tint-red:#432624; --tint-blue:#1E3548; --tint-teal:#1D3A37;
     --swoop-planifie:var(--stat-green);
     --swoop-planifie-dark:var(--stat-green-dark);
     --swoop-encours:var(--stat-red);
     --swoop-encours-dark:var(--stat-red-dark);
     --swoop-termine:var(--stat-blue);
     --swoop-termine-dark:var(--stat-blue-dark);
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
+    --ink:#272622;
+    --paper:#F3F5F8;
+    --paper-2:#FFFFFF;
+    --white:#FFFFFF;
+    --line:#D3D9E2;
+    --ink-soft:#6A6963;
+    --rust:#1A86D6;
+    --rust-dark:#0F65A8;
+    --ochre:#1A86D6;
+    --moss:#12907F;
+    --moss-dark:#0B6E61;
+    --danger:#D93A2E;
+    --on-accent:#FFFFFF;
+    --shadow: 0 2px 0 rgba(39,38,34,0.12);
+    --stat-green:#2E9E5B; --stat-green-dark:#176B3A;
+    --stat-indigo:#6A64E0; --stat-indigo-dark:#4743B5;
+    --stat-red:#D93A2E; --stat-red-dark:#A8261C;
+    --stat-blue:#2F7BE0; --stat-blue-dark:#1A55A8;
+    --tint-green:#E3F5EA; --tint-red:#FCE8E6; --tint-blue:#E4EEFC; --tint-teal:#DFF4F1;
+    color-scheme:light;
   }
   *{box-sizing:border-box;}
   body{
@@ -90,7 +117,7 @@
 
   header.topbar{
     display:flex; align-items:center; justify-content:space-between;
-    border-bottom:3px solid var(--ink); padding-bottom:16px; margin-bottom:22px;
+    border-bottom:3px solid var(--rust); padding-bottom:16px; margin-bottom:22px;
     flex-wrap:wrap; gap:14px;
   }
   .brand-mark{
@@ -123,7 +150,7 @@
   }
   .btn:hover{transform:translateY(-1px) scale(1.095);}
   .btn:active{transform:translateY(0) scale(1.04);}
-  .btn-primary{background:var(--rust); color:var(--white); border-color:var(--rust-dark);}
+  .btn-primary{background:var(--rust); color:var(--on-accent); border-color:var(--rust-dark);}
   .btn-ghost{background:transparent; box-shadow:none; border-color:var(--line);}
   .btn-danger{background:var(--white); color:var(--danger); border-color:var(--danger);}
   .btn-sm{padding:6px 11px; font-size:12px;}
@@ -193,9 +220,9 @@
     font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600; padding:3px 9px;
     border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:0.04em;
   }
-  .st-planifie{background:#E3F5EA; color:var(--stat-green-dark); border:1px solid var(--stat-green);}
-  .st-encours{background:#FCE8E6; color:var(--stat-red-dark); border:1px solid var(--stat-red);}
-  .st-termine{background:#E4EEFC; color:var(--stat-blue-dark); border:1px solid var(--stat-blue);}
+  .st-planifie{background:var(--tint-green); color:var(--stat-green-dark); border:1px solid var(--stat-green);}
+  .st-encours{background:var(--tint-red); color:var(--stat-red-dark); border:1px solid var(--stat-red);}
+  .st-termine{background:var(--tint-blue); color:var(--stat-blue-dark); border:1px solid var(--stat-blue);}
   .card-meta{font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
   .card-meta b{color:var(--ink); font-weight:600;}
   .card-foot{
@@ -258,9 +285,9 @@
     transition:transform .15s ease; position:relative; overflow:hidden;
   }
   .status-opt:hover{transform:scale(1.095);}
-  .status-opt.sel-planifie.on{background:#E3F5EA; border-color:var(--stat-green); color:var(--stat-green-dark);}
-  .status-opt.sel-encours.on{background:#FCE8E6; border-color:var(--stat-red); color:var(--stat-red-dark);}
-  .status-opt.sel-termine.on{background:#E4EEFC; border-color:var(--stat-blue); color:var(--stat-blue-dark);}
+  .status-opt.sel-planifie.on{background:var(--tint-green); border-color:var(--stat-green); color:var(--stat-green-dark);}
+  .status-opt.sel-encours.on{background:var(--tint-red); border-color:var(--stat-red); color:var(--stat-red-dark);}
+  .status-opt.sel-termine.on{background:var(--tint-blue); border-color:var(--stat-blue); color:var(--stat-blue-dark);}
 
   .entry-list{display:flex; flex-direction:column; gap:8px;}
   .entry{
@@ -275,15 +302,15 @@
     font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; padding:2px 8px;
     border-radius:20px; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer;
   }
-  .sav-ouvert{background:#FCE8E6; color:var(--danger); border:1px solid var(--danger);}
-  .sav-resolu{background:#DFF4F1; color:var(--moss-dark); border:1px solid var(--moss);}
+  .sav-ouvert{background:var(--tint-red); color:var(--danger); border:1px solid var(--danger);}
+  .sav-resolu{background:var(--tint-teal); color:var(--moss-dark); border:1px solid var(--moss);}
   .entry-intervenant{
     font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-soft);
     background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:2px 9px;
   }
   .card-sav-flag{
     position:absolute; top:12px; right:12px; font-family:'JetBrains Mono',monospace; font-size:9.5px;
-    font-weight:700; padding:3px 9px; border-radius:20px; background:#FCE8E6; color:var(--danger);
+    font-weight:700; padding:3px 9px; border-radius:20px; background:var(--tint-red); color:var(--danger);
     border:1px solid var(--danger); text-transform:uppercase; letter-spacing:0.03em;
   }
 
@@ -421,13 +448,13 @@
     border:1.5px solid var(--line); border-radius:14px; background:var(--white); color:var(--ink);
   }
   .side-profile .avatar{
-    width:34px; height:34px; border-radius:50%; background:var(--rust); color:#fff; flex-shrink:0;
+    width:34px; height:34px; border-radius:50%; background:var(--rust); color:var(--on-accent); flex-shrink:0;
     display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;
     font-family:'Space Grotesk',sans-serif;
   }
   .side-profile .sp-name{font-weight:700; font-size:13px; line-height:1.2;}
   .side-profile .sp-sub{font-size:11px; color:var(--ink-soft);}
-  .avatar-big{width:60px; height:60px; border-radius:50%; background:var(--rust); color:#fff; margin:0 auto 10px;
+  .avatar-big{width:60px; height:60px; border-radius:50%; background:var(--rust); color:var(--on-accent); margin:0 auto 10px;
     display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; font-family:'Space Grotesk',sans-serif;}
   .dialog hr{border:none; border-top:1px dashed var(--line); margin:16px 0;}
   .chk{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1.5px solid var(--line); border-radius:12px; margin-bottom:8px; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--ink);}
@@ -445,7 +472,75 @@
   .linkbtn{background:none; color:var(--rust-dark); font-size:12.5px; font-weight:600; padding:4px 2px; text-decoration:underline; cursor:pointer;}
   .code-box{font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; letter-spacing:.08em; text-align:center;
     background:var(--paper); border:1.5px dashed var(--rust); border-radius:14px; padding:16px 10px; margin:12px 0; color:var(--ink); user-select:all; word-break:break-all;}
-  .warn-box{background:#FCE8E6; border:1.5px solid var(--danger); color:var(--stat-red-dark); border-radius:12px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin:10px 0;}
+  .warn-box{background:var(--tint-red); border:1.5px solid var(--danger); color:var(--stat-red-dark); border-radius:12px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin:10px 0;}
+
+  /* ===== Équipe & discussion ===== */
+  .chat-ov{align-items:stretch; padding:10px;}
+  .chat-box{width:min(720px,100%); height:100%; max-height:none; padding:0; display:flex; flex-direction:column; overflow:hidden;}
+  .chat-head{padding:14px 16px; border-bottom:1.5px solid var(--line); display:flex; gap:10px; align-items:center; justify-content:space-between; background:var(--white);}
+  .chat-head h2{margin:0; font-size:17px;}
+  .chat-head select{max-width:58%;}
+  .chat-list{flex:1; overflow-y:auto; padding:14px 16px; background:var(--paper); display:flex; flex-direction:column; gap:6px;}
+  .msg{max-width:84%; padding:8px 12px; border-radius:16px; background:var(--white); border:1.5px solid var(--line); font-size:13.5px; line-height:1.45; align-self:flex-start; word-break:break-word; white-space:pre-wrap; position:relative;}
+  .msg.me{align-self:flex-end; background:var(--rust); color:var(--on-accent); border-color:var(--rust);}
+  .msg .who{font-size:11px; font-weight:700; margin-bottom:2px;}
+  .msg .when{font-size:10.5px; opacity:.65; margin-left:8px; font-weight:500;}
+  .msg .msg-del{background:none; color:inherit; opacity:.55; font-size:13px; padding:0 0 0 8px; cursor:pointer;}
+  .day-sep{align-self:center; font-size:11px; color:var(--ink-soft); margin:10px 0 2px; font-weight:600;}
+  .chat-empty{margin:auto; text-align:center; color:var(--ink-soft); font-size:13px; line-height:1.6; padding:20px;}
+  .chat-input{display:flex; gap:8px; padding:12px; border-top:1.5px solid var(--line); background:var(--white); align-items:flex-end;}
+  .chat-input textarea{flex:1; resize:none; max-height:110px; min-height:42px;}
+  .badge-unread{margin-left:auto; background:var(--danger); color:#fff; border-radius:999px; font-size:11px; font-weight:700; padding:2px 8px;}
+  .role-pill{display:inline-block; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--paper); border:1px solid var(--line); color:var(--ink-soft); margin-left:6px;}
+
+  /* ===== Planning, maintenance, fiches ===== */
+  .top-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .k-debut{--k:var(--stat-indigo); --kd:var(--stat-indigo-dark);}
+  .k-fin{--k:var(--stat-blue); --kd:var(--stat-blue-dark);}
+  .k-preventive{--k:var(--stat-green); --kd:var(--stat-green-dark);}
+  .k-corrective{--k:var(--stat-red); --kd:var(--stat-red-dark);}
+  .cal-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .cal-head h2{font-family:'Space Grotesk',sans-serif; font-size:21px; margin:0 8px; min-width:180px; text-align:center;}
+  .cal-nav{width:40px; padding:8px 0;}
+  .cal-legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-soft); margin:0 0 12px;}
+  .cal-legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px; background:var(--k);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;}
+  .cal-dow{font-size:11px; font-weight:700; color:var(--ink-soft); text-align:center; padding:4px 0; text-transform:uppercase; letter-spacing:.04em;}
+  .cal-cell{min-height:92px; border:1.5px solid var(--line); border-radius:12px; background:var(--white); padding:6px; display:flex; flex-direction:column; gap:3px; text-align:left; color:var(--ink); cursor:pointer; overflow:hidden; font-family:inherit;}
+  .cal-cell.other{opacity:.4;}
+  .cal-cell.today{border-color:var(--rust); box-shadow:0 0 0 1.5px var(--rust) inset;}
+  .cal-cell.sel{background:var(--paper-2); outline:2px solid var(--rust-dark); outline-offset:-2px;}
+  .cal-num{font-size:12.5px; font-weight:700;}
+  .cal-cell.today .cal-num{background:var(--rust); color:var(--on-accent); border-radius:999px; display:inline-block; width:22px; height:22px; line-height:22px; text-align:center;}
+  .cal-chips{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .cal-chip{display:block; font-size:10.5px; line-height:1.3; padding:2px 6px; border-radius:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; background:var(--paper-2); color:var(--kd); border-left:3px solid var(--k);}
+  @supports (background: color-mix(in srgb, red 10%, transparent)){
+    .cal-chip, .ev-tag{background:color-mix(in srgb, var(--k) 20%, transparent);}
+  }
+  .cal-chip.done{opacity:.5; text-decoration:line-through;}
+  .cal-more{font-size:10.5px; color:var(--ink-soft); font-weight:600;}
+  .cal-dots{display:none; gap:3px; flex-wrap:wrap;}
+  .cal-dots i{width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--k);}
+  @media(max-width:700px){ .cal-cell{min-height:54px; padding:4px;} .cal-chips{display:none;} .cal-dots{display:flex;} .cal-head h2{min-width:140px; font-size:18px;} }
+  .plan-cols{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:16px; margin-top:18px; align-items:start;}
+  @media(max-width:900px){ .plan-cols{grid-template-columns:1fr;} }
+  .plan-box{border:1.5px solid var(--line); border-radius:16px; background:var(--white); padding:14px 16px; margin-bottom:14px;}
+  .plan-box h3{font-family:'Space Grotesk',sans-serif; font-size:15px; margin:0 0 6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .plan-box .today-badge{font-size:10.5px; padding:2px 9px; border-radius:999px; background:var(--rust); color:var(--on-accent); font-weight:700;}
+  .ev-row{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px dashed var(--line); flex-wrap:wrap;}
+  .plan-box h3 + .ev-row, .plan-box h3 + .rem-empty{border-top:none;}
+  .ev-tag{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--paper-2); color:var(--kd); border:1px solid var(--k); white-space:nowrap; margin-top:1px;}
+  .ev-main{flex:1; min-width:150px; font-size:13px;}
+  .ev-main small{display:block; color:var(--ink-soft); font-size:11.5px; margin-top:2px; line-height:1.5;}
+  .ev-actions{display:flex; gap:6px; flex-wrap:wrap;}
+  .late{color:var(--danger); font-weight:700;}
+  .seg{display:flex; gap:6px;}
+  .seg button{flex:1; padding:10px; border:1.5px solid var(--line); border-radius:12px; background:var(--white); font-weight:700; font-size:13px; color:var(--ink); cursor:pointer;}
+  .seg button.on{border-color:var(--k); color:var(--kd); background:var(--paper-2); box-shadow:0 0 0 1.5px var(--k) inset;}
+  .dialog.wide{width:min(620px,100%);}
+  .fiche-meta{font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.5;}
+  .entry-actions{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+  .entry-actions button{font-size:12px;}
 </style>
 </head>
 <body>
@@ -465,6 +560,12 @@
       <span><span class="sp-name" id="sp-name" style="display:block">Mon profil</span><span class="sp-sub">Profil et compte</span></span>
     </button>
 
+    <button class="side-profile" id="btn-chat" type="button" style="display:none; margin-top:8px;">
+      <span class="avatar" style="background:var(--moss)">💬</span>
+      <span><span class="sp-name" style="display:block">Discussion</span><span class="sp-sub" id="chat-sub">Équipe</span></span>
+      <span class="badge-unread" id="chat-badge" style="display:none">0</span>
+    </button>
+
     <nav class="side-nav">
       <div class="side-nav-label">Chantiers</div>
       <button class="filter-chip nav-item active" data-view="chantiers" data-f="tous">Tous les chantiers</button>
@@ -472,6 +573,13 @@
       <button class="filter-chip nav-item" data-view="chantiers" data-f="encours">En cours</button>
       <button class="filter-chip nav-item" data-view="chantiers" data-f="termine">Terminé</button>
       <button class="btn btn-primary btn-sm" id="btn-new" style="margin-top:8px;">+ Nouveau chantier</button>
+    </nav>
+
+    <nav class="side-nav">
+      <div class="side-nav-label">Planning &amp; maintenance</div>
+      <button class="filter-chip nav-item" data-view="planning" data-f="mois">📅 Calendrier</button>
+      <button class="btn btn-primary btn-sm" id="btn-new-maint" style="margin-top:8px;">+ Planifier une maintenance</button>
+      <button class="btn btn-ghost btn-sm" id="btn-new-fiche" style="margin-top:6px;">🛠 Fiche après travaux</button>
     </nav>
 
     <nav class="side-nav">
@@ -484,6 +592,7 @@
 
     <div class="side-actions">
       <button class="btn btn-ghost btn-sm" id="btn-reminder">🔔 Rappel de la semaine</button>
+      <button class="btn btn-ghost btn-sm" id="btn-theme">🌓 Thème clair / sombre</button>
       <button class="btn btn-ghost btn-sm" id="btn-export">⬇ Sauvegarder</button>
       <button class="btn btn-ghost btn-sm" id="btn-import">⬆ Restaurer</button>
       <input type="file" id="import-input" accept="application/json" style="display:none">
@@ -503,7 +612,15 @@
   <main class="app">
     <header class="topbar">
       <div class="brand-mark">
-        <h1>Suivi de chantier et installation</h1>
+        <div>
+          <h1>Suivi de chantier et installation</h1>
+          <div class="sub" id="top-date"></div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-sm" id="top-planning">📅 Planning</button>
+        <button class="btn btn-sm btn-primary" id="top-maint">+ Maintenance</button>
+        <button class="btn btn-sm btn-primary" id="top-fiche">🛠 Fiche après travaux</button>
       </div>
       <input class="search" id="search" placeholder="Rechercher : client, site, localisation…" style="max-width:360px;">
     </header>
@@ -527,6 +644,7 @@
         <div>Les interventions SAV apparaîtront ici, séparées des chantiers.</div>
       </div>
     </div>
+    <div id="view-planning" style="display:none"></div>
   </main>
 </div>
 
@@ -550,7 +668,7 @@ let fileHandle = null;
 let fileLinkState = 'none'; // 'none' | 'linked' | 'needs-reconnect' | 'unsupported'
 
 function uid(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function todayISO(){ return new Date().toISOString().slice(0,10); }
+function todayISO(){ return localISO(new Date()); }
 function fmtDate(iso){
   if(!iso) return '—';
   const d = new Date(iso+'T00:00:00');
@@ -882,11 +1000,16 @@ function render(){
   renderOverview();
   document.getElementById('view-chantiers').style.display = currentView === 'chantiers' ? 'block' : 'none';
   document.getElementById('view-sav').style.display = currentView === 'sav' ? 'block' : 'none';
+  document.getElementById('view-planning').style.display = currentView === 'planning' ? 'block' : 'none';
+  document.getElementById('overview').style.display = currentView === 'planning' ? 'none' : '';
+  document.getElementById('search').style.display = currentView === 'planning' ? 'none' : '';
   document.getElementById('search').placeholder = currentView === 'sav'
     ? 'Rechercher : chantier, intervenant, commentaire…'
     : 'Rechercher : client, site, localisation…';
 
-  if(currentView === 'sav'){
+  if(currentView === 'planning'){
+    renderPlanning();
+  } else if(currentView === 'sav'){
     renderSavSection();
   } else {
     renderChantiers();
@@ -1103,7 +1226,7 @@ document.querySelectorAll('.filter-chip[data-view]').forEach(chip=>{
     chip.classList.add('active');
     currentView = chip.dataset.view;
     if(currentView === 'sav'){ savFilter = chip.dataset.f; }
-    else { activeFilter = chip.dataset.f; }
+    else if(currentView === 'chantiers'){ activeFilter = chip.dataset.f; }
     render();
   });
 });
@@ -1246,7 +1369,10 @@ function openPanel(id, isNew){
     <div class="panel">
       <div class="panel-head">
         <h2>${isNew ? 'Nouveau chantier' : escapeHtml(c.site || 'Chantier')}</h2>
-        <button class="close-x" id="btn-close">&times;</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="btn btn-sm" id="btn-chat-c" style="display:none;">💬 Discussion</button>
+          <button class="close-x" id="btn-close">&times;</button>
+        </div>
       </div>
       <div class="panel-body">
 
@@ -1393,9 +1519,21 @@ function openPanel(id, isNew){
         </div>
 
         <div class="section">
+          <div class="section-label">Maintenance — préventive &amp; corrective</div>
+          <div class="entry-list" id="maint-list"></div>
+          <button class="btn btn-sm btn-ghost" id="btn-add-maint" style="margin-top:6px;">+ Planifier une maintenance</button>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Fiches après travaux</div>
+          <div class="entry-list" id="fiche-list"></div>
+          <button class="btn btn-sm btn-ghost" id="btn-add-fiche" style="margin-top:6px;">+ Ajouter une fiche après travaux</button>
+        </div>
+
+        <div class="section">
           <div class="section-label">Photos &amp; documents</div>
           <div class="doc-grid" id="doc-grid"></div>
-          <div class="upload-zone" id="upload-zone">Cliquer pour ajouter une photo (réduite automatiquement, conservée dans l'appareil)</div>
+          <div class="upload-zone" id="upload-zone">Cliquer pour ajouter une photo (réduite automatiquement, enregistrée avec le chantier)</div>
           <input type="file" id="file-input" accept="image/*" style="display:none" multiple>
         </div>
 
@@ -1414,6 +1552,10 @@ function openPanel(id, isNew){
   renderNotes(c);
   renderSav(c);
   renderDocs(c);
+  renderMaintList(c);
+  renderFiches(c);
+  document.getElementById('btn-add-maint').addEventListener('click', ()=> openMaintDialog({cid:c.id}));
+  document.getElementById('btn-add-fiche').addEventListener('click', ()=> openFicheDialog({cid:c.id}));
 
   document.querySelectorAll('.status-opt').forEach(opt=>{
     opt.addEventListener('click', ()=>{
@@ -1500,7 +1642,12 @@ function openPanel(id, isNew){
     closePanel();
   });
 
+  const chatC = document.getElementById('btn-chat-c');
+  if(chatC && TEAM && !isNew){ chatC.style.display = ''; chatC.addEventListener('click', ()=> openChat(c.id)); }
+  const delB = document.getElementById('btn-delete');
+  if(delB && TEAM && TEAM.role !== 'admin') delB.style.display = 'none';
   document.getElementById('btn-delete').addEventListener('click', async ()=>{
+    if(TEAM && TEAM.role !== 'admin'){ toast('Seul l\'administrateur peut supprimer un chantier'); return; }
     if(!confirm('Supprimer définitivement ce chantier ?')) return;
     chantiers = chantiers.filter(x=>x.id!==c.id);
     await saveAll();
@@ -1773,6 +1920,11 @@ function updateProfileChip(){
 }
 function frError(e){
   const m = String((e && e.message) || e || '').toLowerCase();
+  if(m.includes('code_invalide')) return 'Code d\'invitation invalide.';
+  if(m.includes('deja_membre')) return 'Vous faites déjà partie d\'une équipe.';
+  if(m.includes('reserve_admin')) return 'Action réservée à l\'administrateur.';
+  if(m.includes('row-level security') || m.includes('permission denied')) return 'Action non autorisée.';
+  if(m.includes('does not exist') || m.includes('schema cache') || m.includes('could not find')) return 'Le script SQL de l\'équipe n\'a pas encore été exécuté dans Supabase.';
   if(m.includes('invalid login')) return 'E-mail ou mot de passe incorrect.';
   if(m.includes('already registered') || m.includes('already been registered')) return 'Un compte existe déjà avec cet e-mail.';
   if(m.includes('not confirmed')) return 'Confirmez d\'abord votre e-mail (lien reçu par message), puis reconnectez-vous.';
@@ -1784,7 +1936,10 @@ function frError(e){
   return 'Erreur : ' + ((e && e.message) || 'inconnue');
 }
 
-// --- Synchronisation des chantiers ---
+// --- Synchronisation des chantiers (perso ou équipe) ---
+let TEAM = null, teamReady = false;
+const SCOPE_KEY = 'chantiers_scope_v1';
+const sleepMs = ms => new Promise(r=>setTimeout(r,ms));
 function canon(v){
   if(Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
   if(v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k=> JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
@@ -1792,10 +1947,13 @@ function canon(v){
 }
 function hashStr(str){ let h = 5381; for(let i=0;i<str.length;i++) h = ((h<<5)+h+str.charCodeAt(i))|0; return (h>>>0).toString(36) + ':' + str.length; }
 const hashOf = o => hashStr(canon(o));
-function baseKey(){ return 'chantiers_syncbase_' + ME.id; }
-function getBase(){ try{ return JSON.parse(localStorage.getItem(baseKey()) || '{}'); }catch(e){ return {}; } }
-function setBase(b){ try{ localStorage.setItem(baseKey(), JSON.stringify(b)); }catch(e){} }
 function stamp(o){ return (o && (o.updatedAt || o.createdAt)) || ''; }
+function syncCfg(){
+  if(TEAM) return { table:'team_chantiers', col:'team_id', val:TEAM.id, key:'chantiers_sync2_team_' + TEAM.id, canDelete: TEAM.role === 'admin', team:true };
+  return { table:'chantiers', col:'user_id', val:ME.id, key:'chantiers_sync2_user_' + ME.id, canDelete:true, team:false };
+}
+function getState(k){ try{ const o = JSON.parse(localStorage.getItem(k) || 'null'); if(o && o.h) return { h:o.h, t:o.t || {} }; }catch(e){} return { h:{}, t:{} }; }
+function setState(k, st){ try{ localStorage.setItem(k, JSON.stringify(st)); }catch(e){} }
 function scheduleSync(){
   if(!sb || !ME || ME.offline || applyingRemote) return;
   if(syncBusy){ syncAgain = true; return; }
@@ -1806,44 +1964,58 @@ async function syncAll(){
   if(syncBusy){ syncAgain = true; return false; }
   syncBusy = true; syncState = 'syncing';
   try{
-    const { data: rows, error } = await sb.from('chantiers').select('id,data');
-    if(error) throw error;
-    const base = getBase(), nb = {};
-    const remote = new Map(rows.map(r=>[r.id, r.data]));
+    const cfg = syncCfg(), st = getState(cfg.key), base = st.h, known = st.t;
+    const meta = await sb.from(cfg.table).select('id,updated_at').eq(cfg.col, cfg.val);
+    if(meta.error) throw meta.error;
+    const rts = new Map(meta.data.map(r=>[r.id, new Date(r.updated_at).getTime()]));
     const local = new Map(chantiers.map(c=>[c.id, c]));
-    const ids = new Set([...local.keys(), ...remote.keys()]);
+    const fetchIds = [];
+    rts.forEach((ts, id)=>{ if(known[id] !== ts || (!local.has(id) && !cfg.canDelete)) fetchIds.push(id); });
+    const remote = new Map();
+    for(let i=0; i<fetchIds.length; i+=8){
+      const part = fetchIds.slice(i, i+8);
+      const res = await sb.from(cfg.table).select('id,data').eq(cfg.col, cfg.val).in('id', part);
+      if(res.error) throw res.error;
+      res.data.forEach(r=> remote.set(r.id, r.data));
+    }
+    const ids = new Set([...local.keys(), ...rts.keys()]);
     const keep = new Map(), up = [], del = [];
     for(const id of ids){
-      const l = local.get(id), r = remote.get(id);
-      const lh = l ? hashOf(l) : null, rh = r ? hashOf(r) : null, bh = base[id];
-      if(l && r){
+      const l = local.get(id), exists = rts.has(id), r = remote.get(id);
+      const lh = l ? hashOf(l) : null, bh = base[id];
+      const rh = !exists ? null : (r !== undefined ? hashOf(r) : bh);
+      if(l && exists){
         if(lh === rh) keep.set(id, l);
-        else if(lh === bh) keep.set(id, r);
+        else if(lh === bh && r !== undefined) keep.set(id, r);
         else if(rh === bh){ keep.set(id, l); up.push(id); }
         else if(stamp(l) >= stamp(r)){ keep.set(id, l); up.push(id); }
         else keep.set(id, r);
       }else if(l){
-        if(bh !== undefined && lh === bh){ /* supprimé ailleurs */ }
+        if(bh !== undefined && lh === bh){ /* supprimé par quelqu'un d'autre */ }
         else { keep.set(id, l); up.push(id); }
       }else{
-        if(bh !== undefined && rh === bh) del.push(id);
+        if(bh !== undefined && rh === bh && cfg.canDelete) del.push(id);
         else keep.set(id, r);
       }
     }
     for(const id of up){
-      const { error: e } = await sb.from('chantiers').upsert({ id, user_id: ME.id, data: keep.get(id), updated_at: new Date().toISOString() }, { onConflict:'user_id,id' });
-      if(e) throw e;
+      const ts = new Date().toISOString();
+      const row = { id, data: keep.get(id), updated_at: ts }; row[cfg.col] = cfg.val; if(cfg.team) row.updated_by = ME.id;
+      const res = await sb.from(cfg.table).upsert(row, { onConflict: cfg.col + ',id' });
+      if(res.error) throw res.error;
+      rts.set(id, new Date(ts).getTime());
     }
     for(const id of del){
-      const { error: e } = await sb.from('chantiers').delete().eq('id', id);
-      if(e) throw e;
+      const res = await sb.from(cfg.table).delete().eq('id', id).eq(cfg.col, cfg.val);
+      if(res.error) throw res.error;
+      rts.delete(id);
     }
-    keep.forEach((v,id)=>{ nb[id] = hashOf(v); });
+    const nb = {}, nt = {};
+    keep.forEach((v,id)=>{ nb[id] = hashOf(v); if(rts.has(id)) nt[id] = rts.get(id); });
+    setState(cfg.key, { h:nb, t:nt });
     const order = chantiers.filter(c=>keep.has(c.id)).map(c=>keep.get(c.id));
     keep.forEach((v,id)=>{ if(!local.has(id)) order.push(v); });
-    const changed = canon(order) !== canon(chantiers);
-    setBase(nb);
-    if(changed){
+    if(canon(order) !== canon(chantiers)){
       applyingRemote = true;
       chantiers = order;
       try{ await saveAll(); }finally{ applyingRemote = false; }
@@ -1869,6 +2041,348 @@ function syncLabel(){
   return 'En attente de synchronisation.';
 }
 
+// --- Équipe ---
+const teamCacheKey = () => 'chantiers_team_cache_' + ME.id;
+function cacheTeam(){ try{ if(TEAM) localStorage.setItem(teamCacheKey(), JSON.stringify(TEAM)); else localStorage.removeItem(teamCacheKey()); }catch(e){} }
+function fmtCode(c){ return String(c||'').replace(/(.{4})(?=.)/g, '$1-'); }
+async function loadMembership(){
+  const fromCache = ()=>{ try{ return JSON.parse(localStorage.getItem(teamCacheKey()) || 'null'); }catch(e){ return null; } };
+  if(!sb || !ME || ME.offline){ TEAM = fromCache(); teamReady = !!TEAM; return; }
+  const { data, error } = await sb.from('team_members').select('role,display_name,joined_at,teams(id,name,invite_code)').eq('user_id', ME.id).maybeSingle();
+  if(error){ TEAM = fromCache(); teamReady = !!TEAM; return; }
+  teamReady = true;
+  if(data && data.teams){
+    TEAM = { id:data.teams.id, name:data.teams.name, invite:data.teams.invite_code, role:data.role, myName:data.display_name, joined:data.joined_at };
+  }else TEAM = null;
+  cacheTeam();
+}
+function reconcileScope(opts){
+  opts = opts || {};
+  const want = TEAM ? 'team:' + TEAM.id : 'user:' + ME.id;
+  let stored = localStorage.getItem(SCOPE_KEY);
+  if(!stored){ const o = localStorage.getItem(OWNER_KEY); if(o) stored = 'user:' + o; }
+  if(!teamReady && !TEAM && stored && stored.startsWith('team:')) return false;   // erreur réseau : on ne touche à rien
+  if(stored && stored !== want){
+    const keep = opts.keepLocal && TEAM && stored === 'user:' + ME.id;
+    if(!keep){ chantiers = []; try{ localStorage.setItem(STORE_KEY, '[]'); }catch(e){} try{ render(); }catch(e){} }
+  }
+  try{ localStorage.setItem(SCOPE_KEY, want); }catch(e){}
+  return true;
+}
+async function afterTeamChange(){
+  startRealtime(); startPoll();
+  chatMsgs = []; chatLoaded = new Set();
+  updateChatUI();
+  await syncAll();
+  await loadMessages();
+  updateChatUI();
+}
+async function createTeam(teamName, myName){
+  const { error } = await sb.rpc('create_team', { team_name: teamName, my_name: myName });
+  if(error) throw error;
+  await loadMembership(); reconcileScope({ keepLocal:true }); await afterTeamChange();
+}
+async function joinTeam(code, myName){
+  const { error } = await sb.rpc('join_team', { code, my_name: myName });
+  if(error) throw error;
+  await loadMembership(); reconcileScope({ keepLocal:false }); await afterTeamChange();
+}
+async function leaveTeam(){
+  const { error } = await sb.from('team_members').delete().eq('team_id', TEAM.id).eq('user_id', ME.id);
+  if(error) throw error;
+  stopRealtime(); TEAM = null; cacheTeam(); reconcileScope();
+  chatMsgs = []; closeDialog('chat-dialog'); updateChatUI();
+  await syncAll();
+}
+async function checkMembership(){
+  if(!sb || !ME || ME.offline || !TEAM) return;
+  const { data, error } = await sb.from('team_members').select('role').eq('team_id', TEAM.id).eq('user_id', ME.id).maybeSingle();
+  if(error) return;
+  if(!data){
+    const nm = TEAM.name;
+    stopRealtime(); TEAM = null; cacheTeam(); reconcileScope();
+    chatMsgs = []; closeDialog('chat-dialog'); updateChatUI();
+    toast('Vous ne faites plus partie de l\'équipe « ' + nm + ' »');
+  }else if(data.role !== TEAM.role){ TEAM.role = data.role; cacheTeam(); }
+}
+function maybeAskTeam(){
+  if(TEAM || !teamReady || !ME || ME.offline) return;
+  try{ if(localStorage.getItem('team_skip_' + ME.id)) return; }catch(e){}
+  setTimeout(()=>{ if(!TEAM && ME) showTeamChoice(); }, 700);
+}
+function showTeamChoice(mode){
+  mode = mode || 'create';
+  const create = mode === 'create';
+  const ov = openDialog('team-dialog', `
+    <h2>👥 Équipe SAV</h2>
+    <p class="muted">Travaillez à plusieurs sur les mêmes chantiers et discutez directement dans l'application.</p>
+    <div class="auth-tabs">
+      <button type="button" data-m="create" class="${create?'on':''}">Créer l'équipe</button>
+      <button type="button" data-m="join" class="${create?'':'on'}">Rejoindre</button>
+    </div>
+    ${create ? `
+      <div class="fld"><label>Nom de l'équipe</label><input id="tc-name" value="Équipe SAV"></div>
+      <p class="muted" style="margin-top:-4px;">Vous en serez l'administrateur. Vos chantiers actuels seront partagés avec l'équipe.</p>` : `
+      <div class="fld"><label>Code d'invitation</label><input id="tc-code" autocapitalize="characters" placeholder="XXXX-XXXX" style="font-family:'JetBrains Mono',monospace;"></div>
+      <p class="muted" style="margin-top:-4px;">Demandez le code à l'administrateur. Les chantiers de l'équipe remplaceront ceux de cet appareil.</p>`}
+    <div class="fld"><label>Votre nom affiché dans l'équipe</label><input id="tc-me" value="${escapeHtml(ME ? ME.name : '')}"></div>
+    <div class="auth-err" id="tc-err"></div>
+    <button class="btn btn-primary" id="tc-go" style="width:100%;">${create ? 'Créer l\'équipe' : 'Rejoindre l\'équipe'}</button>
+    <div style="margin-top:10px;"><button type="button" class="linkbtn" id="tc-skip">Continuer seul pour l'instant</button></div>`);
+  ov.querySelectorAll('.auth-tabs button').forEach(b=> b.addEventListener('click', ()=> showTeamChoice(b.dataset.m)));
+  ov.querySelector('#tc-skip').addEventListener('click', ()=>{ try{ localStorage.setItem('team_skip_' + ME.id, '1'); }catch(e){} ov.remove(); });
+  const btn = ov.querySelector('#tc-go'), err = m => { ov.querySelector('#tc-err').textContent = m; };
+  btn.addEventListener('click', async ()=>{
+    const me = ov.querySelector('#tc-me').value.trim();
+    if(!me) return err('Entrez votre nom.');
+    err(''); btn.disabled = true; const label = btn.textContent; btn.textContent = 'Patientez…';
+    try{
+      if(create){
+        const nm = ov.querySelector('#tc-name').value.trim();
+        if(!nm){ err('Entrez le nom de l\'équipe.'); btn.disabled = false; btn.textContent = label; return; }
+        await createTeam(nm, me);
+        ov.remove(); toast('Équipe créée');
+        showTeamInvite();
+      }else{
+        const code = ov.querySelector('#tc-code').value.trim();
+        if(!code){ err('Entrez le code d\'invitation.'); btn.disabled = false; btn.textContent = label; return; }
+        await joinTeam(code, me);
+        ov.remove(); toast('Vous avez rejoint l\'équipe « ' + TEAM.name + ' »');
+      }
+    }catch(e){ err(frError(e)); btn.disabled = false; btn.textContent = label; }
+  });
+}
+function showTeamInvite(){
+  if(!TEAM) return;
+  const ov = openDialog('invite-dialog', `
+    <div style="text-align:center;">
+      <div style="font-size:40px;line-height:1;margin-bottom:8px;">🎉</div>
+      <h2>Équipe « ${escapeHtml(TEAM.name)} » créée</h2>
+      <p class="muted">Donnez ce code à vos collègues du SAV. Ils créent leur compte, puis choisissent « Rejoindre » et le saisissent.</p>
+    </div>
+    <div class="code-box">${fmtCode(TEAM.invite)}</div>
+    <div class="row-btns">
+      <button class="btn" id="iv-copy">Copier</button>
+      <button class="btn btn-primary" id="iv-ok">OK</button>
+    </div>`);
+  ov.querySelector('#iv-copy').addEventListener('click', ()=>{ try{ navigator.clipboard.writeText(fmtCode(TEAM.invite)).then(()=>toast('Code copié')); }catch(e){} });
+  ov.querySelector('#iv-ok').addEventListener('click', ()=> ov.remove());
+}
+function renderTeamSection(box, ov){
+  if(!box) return;
+  if(!TEAM){
+    box.innerHTML = `<div style="font-weight:700;font-size:13.5px;margin-bottom:4px;">👥 Équipe</div>
+      <p class="muted" style="margin:0 0 8px;">${teamReady ? 'Vous n\'êtes dans aucune équipe.' : 'Fonction équipe indisponible pour le moment (script SQL à exécuter dans Supabase, ou pas de connexion).'}</p>
+      ${teamReady ? '<button class="btn btn-sm" id="tm-open">Créer ou rejoindre une équipe</button>' : ''}`;
+    const b = box.querySelector('#tm-open'); if(b) b.addEventListener('click', ()=>{ ov.remove(); showTeamChoice(); });
+    return;
+  }
+  const admin = TEAM.role === 'admin';
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:13.5px;">👥 ${escapeHtml(TEAM.name)}<span class="role-pill">${admin ? 'Administrateur' : 'Membre'}</span></div>
+    ${admin ? `<p class="muted" style="margin:8px 0 0;">Code d'invitation à donner à vos collègues :</p>
+      <div class="code-box" style="font-size:17px;padding:10px;">${fmtCode(TEAM.invite)}</div>
+      <div class="row-btns" style="margin-top:0;"><button class="btn btn-sm" id="tm-copy">Copier</button><button class="btn btn-sm" id="tm-regen">Nouveau code</button></div>` : ''}
+    <div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin:12px 0 6px;">Membres</div>
+    <div id="tm-list" class="muted">Chargement…</div>
+    ${admin ? '' : '<button class="btn btn-danger btn-sm" id="tm-leave" style="margin-top:10px;">Quitter l\'équipe</button>'}`;
+  const loadList = async ()=>{
+    const list = box.querySelector('#tm-list'); if(!list) return;
+    const { data, error } = await sb.from('team_members').select('user_id,role,display_name').eq('team_id', TEAM.id);
+    if(error){ list.textContent = frError(error); return; }
+    list.innerHTML = data.map(m=>`<div class="rem-item" style="display:flex;justify-content:space-between;align-items:center;cursor:default;">
+      <span>${escapeHtml(m.display_name)}${m.user_id === ME.id ? ' (vous)' : ''}<small>${m.role === 'admin' ? 'Administrateur' : 'Membre'}</small></span>
+      ${admin && m.user_id !== ME.id ? `<button class="linkbtn" data-rm="${m.user_id}" style="color:var(--danger);">Retirer</button>` : ''}</div>`).join('');
+    list.querySelectorAll('[data-rm]').forEach(b=> b.addEventListener('click', async ()=>{
+      if(!confirm('Retirer ce membre de l\'équipe ?')) return;
+      const r = await sb.from('team_members').delete().eq('team_id', TEAM.id).eq('user_id', b.dataset.rm);
+      if(r.error) toast(frError(r.error)); else { toast('Membre retiré'); loadList(); }
+    }));
+  };
+  loadList();
+  const copy = box.querySelector('#tm-copy');
+  if(copy) copy.addEventListener('click', ()=>{ try{ navigator.clipboard.writeText(fmtCode(TEAM.invite)).then(()=>toast('Code copié')); }catch(e){} });
+  const regen = box.querySelector('#tm-regen');
+  if(regen) regen.addEventListener('click', async ()=>{
+    if(!confirm('Les anciens codes ne fonctionneront plus. Générer un nouveau code ?')) return;
+    const r = await sb.rpc('regenerate_invite_code');
+    if(r.error) return toast(frError(r.error));
+    TEAM.invite = r.data; cacheTeam(); renderTeamSection(box, ov); toast('Nouveau code généré');
+  });
+  const leave = box.querySelector('#tm-leave');
+  if(leave) leave.addEventListener('click', async ()=>{
+    if(!confirm('Quitter l\'équipe ? Les chantiers de l\'équipe disparaîtront de cet appareil.')) return;
+    try{ await leaveTeam(); ov.remove(); toast('Vous avez quitté l\'équipe'); }catch(e){ toast(frError(e)); }
+  });
+}
+
+// --- Discussion d'équipe ---
+let chatMsgs = [], chatChannel = 'general', chatLoaded = new Set(), rtChan = null, pollTimer = null;
+const chOf = m => m.chantier_id || 'general';
+const msgMs = m => new Date(m.created_at).getTime();
+function readKey(){ return 'chat_read_' + TEAM.id + '_' + ME.id; }
+function getRead(){ try{ return JSON.parse(localStorage.getItem(readKey()) || '{}'); }catch(e){ return {}; } }
+function setRead(o){ try{ localStorage.setItem(readKey(), JSON.stringify(o)); }catch(e){} }
+function unreadByChannel(){
+  const out = {}; if(!TEAM || !ME) return out;
+  const rd = getRead();
+  if(!rd._init){ rd._init = Date.now(); setRead(rd); }
+  chatMsgs.forEach(m=>{ if(m.user_id === ME.id) return; const ch = chOf(m); if(msgMs(m) > (rd[ch] || rd._init)) out[ch] = (out[ch] || 0) + 1; });
+  return out;
+}
+function updateChatUI(){
+  const b = document.getElementById('btn-chat'); if(!b) return;
+  b.style.display = (TEAM && ME) ? '' : 'none';
+  const sub = document.getElementById('chat-sub'); if(sub && TEAM) sub.textContent = TEAM.name;
+  const total = Object.values(unreadByChannel()).reduce((a,n)=>a+n, 0);
+  const bd = document.getElementById('chat-badge'); bd.style.display = total ? '' : 'none'; bd.textContent = total > 99 ? '99+' : total;
+}
+function mergeMsgs(list){
+  const ids = new Set(chatMsgs.map(m=>m.id)); let added = false;
+  (list || []).forEach(m=>{ if(m && !ids.has(m.id)){ chatMsgs.push(m); ids.add(m.id); added = true; } });
+  if(added) chatMsgs.sort((a,b)=> msgMs(a) - msgMs(b));
+  return added;
+}
+const MSG_COLS = 'id,chantier_id,user_id,author_name,body,created_at';
+async function loadMessages(){
+  if(!sb || !TEAM || !ME || ME.offline) return;
+  const { data, error } = await sb.from('team_messages').select(MSG_COLS).eq('team_id', TEAM.id).order('created_at', { ascending:false }).limit(300);
+  if(!error){ mergeMsgs(data); updateChatUI(); }
+}
+async function loadChannelHistory(ch){
+  if(chatLoaded.has(ch) || !sb || !TEAM || ME.offline) return;
+  chatLoaded.add(ch);
+  let q = sb.from('team_messages').select(MSG_COLS).eq('team_id', TEAM.id);
+  q = ch === 'general' ? q.is('chantier_id', null) : q.eq('chantier_id', ch);
+  const { data, error } = await q.order('created_at', { ascending:false }).limit(200);
+  if(!error && mergeMsgs(data)) renderChat();
+}
+function onRtMessage(m){
+  if(!m || !TEAM || m.team_id !== TEAM.id) return;
+  const added = mergeMsgs([m]);
+  const open = document.getElementById('chat-dialog');
+  if(open && chOf(m) === chatChannel) renderChat();
+  else if(added && m.user_id !== ME.id){
+    const prev = String(m.body || '').replace(/\s+/g,' ').slice(0, 60);
+    toast('💬 ' + m.author_name + ' : ' + prev);
+  }
+  updateChatUI();
+}
+function onRtMessageDelete(old){
+  if(!old || !old.id) return;
+  const n = chatMsgs.length; chatMsgs = chatMsgs.filter(m=>m.id !== old.id);
+  if(chatMsgs.length !== n){ if(document.getElementById('chat-dialog')) renderChat(); updateChatUI(); }
+}
+function startRealtime(){
+  stopRealtime();
+  if(!sb || !TEAM || !ME || ME.offline || !sb.channel) return;
+  const tid = TEAM.id;
+  try{
+    rtChan = sb.channel('team-' + tid)
+      .on('postgres_changes', { event:'*', schema:'public', table:'team_chantiers', filter:'team_id=eq.' + tid }, ()=> scheduleSync())
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'team_messages', filter:'team_id=eq.' + tid }, p=> onRtMessage(p.new))
+      .on('postgres_changes', { event:'DELETE', schema:'public', table:'team_messages' }, p=> onRtMessageDelete(p.old))
+      .on('postgres_changes', { event:'*', schema:'public', table:'team_members' }, ()=> checkMembership())
+      .subscribe();
+  }catch(e){ rtChan = null; }
+}
+function stopRealtime(){ if(rtChan){ try{ sb.removeChannel(rtChan); }catch(e){} rtChan = null; } }
+function startPoll(){
+  stopPoll();
+  pollTimer = setInterval(async ()=>{
+    if(document.hidden || !ME || ME.offline) return;
+    await checkMembership(); scheduleSync();
+  }, 60000);
+}
+function stopPoll(){ if(pollTimer){ clearInterval(pollTimer); pollTimer = null; } }
+
+const AUTHOR_COLORS = ['#1F6FD1','#12907F','#B3541E','#7A4FD1','#C2386B','#4D7C0F'];
+function authorColor(id){ let h = 0; for(const ch of String(id||'')) h = (h*31 + ch.charCodeAt(0)) >>> 0; return AUTHOR_COLORS[h % AUTHOR_COLORS.length]; }
+function fmtHour(ms){ return new Date(ms).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }); }
+function fmtDay(ms){
+  const d = new Date(ms), t = new Date();
+  if(d.toDateString() === t.toDateString()) return 'Aujourd\'hui';
+  const y = new Date(); y.setDate(t.getDate()-1);
+  if(d.toDateString() === y.toDateString()) return 'Hier';
+  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+}
+function channelTitle(ch){
+  if(ch === 'general') return 'Général — toute l\'équipe';
+  const c = chantiers.find(x=>x.id === ch);
+  return c ? (c.site || 'Chantier') + (c.client ? ' — ' + c.client : '') : 'Chantier supprimé';
+}
+function openChat(channel){
+  if(!TEAM) return;
+  chatChannel = channel || 'general';
+  if(chatChannel !== 'general' && !chantiers.some(c=>c.id === chatChannel)) chatChannel = 'general';
+  const unread = unreadByChannel();
+  const opts = ['<option value="general">💬 Général — toute l\'équipe' + (unread.general ? ' (' + unread.general + ')' : '') + '</option>']
+    .concat(chantiers.slice().sort((a,b)=> (a.site||'').localeCompare(b.site||'')).map(c=>
+      `<option value="${escapeHtml(c.id)}">🏗 ${escapeHtml(c.site || 'Sans nom')}${c.client ? ' — ' + escapeHtml(c.client) : ''}${unread[c.id] ? ' (' + unread[c.id] + ')' : ''}</option>`));
+  const ov = openDialog('chat-dialog', `
+    <div class="chat-head">
+      <div><h2>💬 Discussion</h2><div class="muted" style="margin:0;font-size:11.5px;">${escapeHtml(TEAM.name)}</div></div>
+      <select id="ch-select">${opts.join('')}</select>
+      <button class="close-x" id="ch-close" style="color:var(--ink);font-size:26px;">&times;</button>
+    </div>
+    <div class="chat-list" id="ch-list"></div>
+    <div class="chat-input">
+      <textarea id="ch-text" rows="1" placeholder="Écrire un message…"></textarea>
+      <button class="btn btn-primary" id="ch-send">Envoyer</button>
+    </div>`, { cls:'chat-ov', box:'chat-box' });
+  const sel = ov.querySelector('#ch-select'); sel.value = chatChannel;
+  sel.addEventListener('change', ()=>{ chatChannel = sel.value; renderChat(); loadChannelHistory(chatChannel); });
+  ov.querySelector('#ch-close').addEventListener('click', ()=>{ ov.remove(); updateChatUI(); });
+  const ta = ov.querySelector('#ch-text');
+  ta.addEventListener('input', ()=>{ ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 110) + 'px'; });
+  ta.addEventListener('keydown', e=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+  ov.querySelector('#ch-send').addEventListener('click', sendChat);
+  renderChat(); loadChannelHistory(chatChannel);
+  setTimeout(()=>{ try{ ta.focus(); }catch(e){} }, 50);
+}
+function renderChat(){
+  const list = document.getElementById('ch-list'); if(!list || !TEAM) return;
+  const msgs = chatMsgs.filter(m=> chOf(m) === chatChannel);
+  const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+  if(!msgs.length){
+    list.innerHTML = `<div class="chat-empty">${chatChannel === 'general' ? 'Aucun message pour l\'instant.<br>Écrivez le premier message à l\'équipe !' : 'Aucun message sur ce chantier.<br>Utilisez cet espace pour en parler avec l\'équipe.'}</div>`;
+  }else{
+    let html = '', lastDay = '';
+    msgs.forEach(m=>{
+      const day = fmtDay(msgMs(m));
+      if(day !== lastDay){ html += `<div class="day-sep">${escapeHtml(day)}</div>`; lastDay = day; }
+      const mine = m.user_id === ME.id;
+      const canDel = mine || TEAM.role === 'admin';
+      html += `<div class="msg ${mine ? 'me' : ''}">
+        <div class="who" style="${mine ? '' : 'color:' + authorColor(m.user_id)}">${mine ? 'Vous' : escapeHtml(m.author_name)}<span class="when">${fmtHour(msgMs(m))}</span>${canDel ? `<button class="msg-del" data-id="${m.id}" title="Supprimer">🗑</button>` : ''}</div>
+        ${escapeHtml(m.body)}</div>`;
+    });
+    list.innerHTML = html;
+    list.querySelectorAll('.msg-del').forEach(b=> b.addEventListener('click', async ()=>{
+      if(!confirm('Supprimer ce message ?')) return;
+      const r = await sb.from('team_messages').delete().eq('id', b.dataset.id);
+      if(r.error) return toast(frError(r.error));
+      chatMsgs = chatMsgs.filter(x=>x.id !== b.dataset.id); renderChat(); updateChatUI();
+    }));
+  }
+  const title = document.querySelector('#chat-dialog .chat-head h2');
+  if(title) title.textContent = '💬 ' + (chatChannel === 'general' ? 'Discussion' : channelTitle(chatChannel));
+  if(atBottom || list.dataset.init !== chatChannel){ list.scrollTop = list.scrollHeight; list.dataset.init = chatChannel; }
+  const rd = getRead(); const last = msgs.length ? msgMs(msgs[msgs.length-1]) : 0;
+  rd[chatChannel] = Math.max(Date.now(), last); setRead(rd); updateChatUI();
+}
+async function sendChat(){
+  const ta = document.getElementById('ch-text'); if(!ta || !TEAM) return;
+  const body = ta.value.trim(); if(!body) return;
+  if(ME.offline || !navigator.onLine){ toast('Connexion internet nécessaire pour envoyer un message'); return; }
+  ta.value = ''; ta.style.height = 'auto';
+  const row = { team_id:TEAM.id, chantier_id: chatChannel === 'general' ? null : chatChannel, user_id:ME.id, author_name:TEAM.myName, body };
+  const { data, error } = await sb.from('team_messages').insert(row).select(MSG_COLS).single();
+  if(error){ ta.value = body; toast('Message non envoyé : ' + frError(error)); return; }
+  mergeMsgs([data]); renderChat();
+}
+document.getElementById('btn-chat').addEventListener('click', ()=> openChat('general'));
+
 // --- Session ---
 function initSupabase(){
   sb = window.supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
@@ -1883,16 +2397,16 @@ function initSupabase(){
 async function onSession(user, offline){
   if(ME && ME.id === user.id) return;
   setMe(user, offline);
-  try{
-    const owner = localStorage.getItem(OWNER_KEY);
-    if(owner && owner !== user.id){
-      chantiers = []; localStorage.setItem(STORE_KEY, '[]'); try{ render(); }catch(e){}
-    }
-    localStorage.setItem(OWNER_KEY, user.id);
-  }catch(e){}
   closeDialog('auth-screen');
   updateProfileChip();
-  if(!ME.offline) await Promise.race([syncAll(), new Promise(r=>setTimeout(r,5000))]);
+  await loadMembership();
+  if(reconcileScope() === false) ME.offline = true;   // mode dégradé : pas de synchronisation
+  if(!ME.offline){
+    startRealtime(); startPoll();
+    await Promise.race([syncAll(), sleepMs(5000)]);
+    loadMessages().catch(()=>{});
+  }
+  updateChatUI();
   afterLogin(ME);
 }
 
@@ -1908,7 +2422,7 @@ function showAuth(mode, notice){
       <button type="button" data-m="login" class="${signup?'':'on'}">Se connecter</button>
       <button type="button" data-m="signup" class="${signup?'on':''}">Créer un compte</button>
     </div>
-    ${notice ? `<div class="warn-box" style="background:#E3F5EA;border-color:var(--stat-green);color:var(--stat-green-dark);text-align:left;">${notice}</div>` : ''}
+    ${notice ? `<div class="warn-box" style="background:var(--tint-green);border-color:var(--stat-green);color:var(--stat-green-dark);text-align:left;">${notice}</div>` : ''}
     ${signup ? `<div class="fld"><label>Prénom</label><input id="au-name" autocomplete="given-name" placeholder="Eliot"></div>` : ''}
     <div class="fld"><label>Adresse e-mail</label><input id="au-email" type="email" autocomplete="email" placeholder="nom@exemple.com"></div>
     <div class="fld"><label>Mot de passe</label><input id="au-pwd" type="password" autocomplete="${signup?'new-password':'current-password'}" placeholder="${signup?'6 caractères minimum':''}"></div>
@@ -2026,17 +2540,21 @@ function continueAfterLogin(acc){
         <p class="muted">Ravi de vous accueillir. Votre espace est prêt : vous pouvez créer vos chantiers, suivre le SAV et activer le rappel de la semaine.</p>
         <button class="btn btn-primary" id="w-ok" style="width:100%;">Très bien, merci !</button>
       </div>`, {locked:true});
-    ov.querySelector('#w-ok').addEventListener('click', ()=>{ ov.remove(); maybeShowWeeklyReminder(); });
+    ov.querySelector('#w-ok').addEventListener('click', ()=>{ ov.remove(); maybeShowWeeklyReminder(); maybeAskTeam(); });
   }else{
     toast('Bonjour ' + niceName(acc.name) + ' 👋');
     maybeShowWeeklyReminder();
+    maybeAskTeam();
   }
 }
 
 async function logout(){
   if(sb && ME && !ME.offline){ try{ await Promise.race([syncAll(), new Promise(r=>setTimeout(r,4000))]); }catch(e){} }
   try{ if(sb) await sb.auth.signOut(); }catch(e){}
-  ME = null; syncState = 'idle'; syncAt = 0;
+  stopRealtime(); stopPoll();
+  ME = null; TEAM = null; teamReady = false; chatMsgs = []; chatLoaded = new Set(); syncState = 'idle'; syncAt = 0;
+  closeDialog('chat-dialog'); closeDialog('team-dialog');
+  updateChatUI();
   closeDialog('profile-dialog'); closeDialog('reminder-dialog'); closeDialog('weekly-dialog');
   try{ closePanel(); }catch(e){}
   updateProfileChip(); showAuth('login');
@@ -2062,12 +2580,15 @@ function showProfile(){
     <div class="auth-err" id="pf-err"></div>
     <button class="btn btn-sm" id="pf-save-pwd">Changer le mot de passe</button>
     <hr>
+    <div id="pf-team"></div>
+    <hr>
     <button class="btn btn-ghost" id="pf-reminder" style="width:100%; margin-bottom:8px;">🔔 Rappel de la semaine</button>
     <div class="row-btns" style="margin-top:0;">
       <button class="btn btn-danger" id="pf-logout">Se déconnecter</button>
       <button class="btn" id="pf-close">Fermer</button>
     </div>`);
   ov.querySelector('#pf-close').addEventListener('click', ()=> ov.remove());
+  renderTeamSection(ov.querySelector('#pf-team'), ov);
   ov.querySelector('#pf-logout').addEventListener('click', logout);
   ov.querySelector('#pf-reminder').addEventListener('click', ()=>{ ov.remove(); showReminderSettings(); });
   ov.querySelector('#pf-sync-now').addEventListener('click', async ()=>{
@@ -2078,6 +2599,7 @@ function showProfile(){
     const n = ov.querySelector('#pf-name').value.trim();
     if(!n) return;
     updateAccount(a.id, {name:n}); updateProfileChip(); toast('Prénom enregistré');
+    if(TEAM && sb && !ME.offline){ TEAM.myName = n; cacheTeam(); sb.from('team_members').update({display_name:n}).eq('team_id', TEAM.id).eq('user_id', ME.id).then(()=>{}); }
   });
   ov.querySelector('#pf-save-pwd').addEventListener('click', async ()=>{
     const err = ov.querySelector('#pf-err');
@@ -2113,6 +2635,15 @@ function weeklyGroups(r){
   if(r.termine) groups.push({key:'termine', label:'Terminés cette semaine', color:'var(--stat-blue)',
     items: chantiers.filter(c=>c.statut==='termine' && c.updatedAt && localISO(new Date(c.updatedAt)) >= start && localISO(new Date(c.updatedAt)) <= end)
       .map(c=>({c, late:false, sub:'Terminé / mis à jour le ' + fmtDate(localISO(new Date(c.updatedAt)))}))});
+  if(r.maint !== false){
+    const items = [];
+    chantiers.forEach(c=> (c.maint || []).forEach(m=>{
+      if(m.statut !== 'planifiee' || m.date > end) return;
+      items.push({ c, date:m.date, late: m.date < today, sub: MT[m.type].label + ' · ' + fmtDate(m.date) + (m.time ? ' ' + m.time : '') + (m.title ? ' — ' + m.title : '') });
+    }));
+    items.sort((a,b)=> a.date.localeCompare(b.date));
+    groups.push({ key:'maint', label:'Maintenances à faire', color:'var(--stat-green)', items });
+  }
   return groups;
 }
 function showWeeklyReminder(){
@@ -2152,12 +2683,13 @@ function showReminderSettings(){
     <label class="chk"><input type="checkbox" id="rm-encours" ${r.encours?'checked':''}><span class="dot" style="background:var(--stat-red)"></span> En cours</label>
     <label class="chk"><input type="checkbox" id="rm-planifie" ${r.planifie?'checked':''}><span class="dot" style="background:var(--stat-green)"></span> Planifiés</label>
     <label class="chk"><input type="checkbox" id="rm-termine" ${r.termine?'checked':''}><span class="dot" style="background:var(--stat-blue)"></span> Terminés</label>
+    <label class="chk"><input type="checkbox" id="rm-maint" ${r.maint!==false?'checked':''}><span class="dot" style="background:var(--stat-green)"></span> Maintenances planifiées</label>
     <div class="row-btns">
       <button class="btn" id="rm-now">Voir le rappel maintenant</button>
       <button class="btn btn-primary" id="rm-save">Enregistrer</button>
     </div>`);
   const read = ()=>({ on: ov.querySelector('#rm-on').checked, encours: ov.querySelector('#rm-encours').checked,
-    planifie: ov.querySelector('#rm-planifie').checked, termine: ov.querySelector('#rm-termine').checked, lastWeek: r.lastWeek || '' });
+    planifie: ov.querySelector('#rm-planifie').checked, termine: ov.querySelector('#rm-termine').checked, maint: ov.querySelector('#rm-maint').checked, lastWeek: r.lastWeek || '' });
   ov.querySelector('#rm-save').addEventListener('click', ()=>{ updateAccount(a.id, {remind: read()}); ov.remove(); toast(read().on ? 'Rappel activé' : 'Rappel désactivé'); });
   ov.querySelector('#rm-now').addEventListener('click', ()=>{ updateAccount(a.id, {remind: read()}); ov.remove(); showWeeklyReminder(); });
 }
@@ -2192,6 +2724,497 @@ async function startApp(){
   showAuth('login');
 }
 window.addEventListener('online', ()=>{ if(ME && ME.offline){ ME = null; startApp(); } else scheduleSync(); });
+
+
+// ===== Thème =====
+function applyTheme(t){
+  document.documentElement.dataset.theme = t;
+  try{ localStorage.setItem('chantiers_theme', t); }catch(e){}
+  const m = document.querySelector('meta[name="theme-color"]'); if(m) m.content = (t === 'light') ? '#F3F5F8' : '#272622';
+}
+document.getElementById('btn-theme').addEventListener('click', ()=>{
+  applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+});
+applyTheme(document.documentElement.dataset.theme || 'dark');
+
+// ===== Planning, maintenance et fiches après travaux =====
+const esc = escapeHtml;
+const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DOW_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const MT = {
+  preventive:{ label:'Préventive', full:'Maintenance préventive' },
+  corrective:{ label:'Corrective', full:'Maintenance corrective' },
+  debut:{ label:'Début chantier', full:'Début du chantier' },
+  fin:{ label:'Fin prévue', full:'Fin prévue du chantier' }
+};
+const FICHE_KINDS = { installation:'Installation / fin de chantier', preventive:'Maintenance préventive', corrective:'Maintenance corrective', sav:'Intervention SAV', autre:'Autre travaux' };
+const ETAT_UI = { ok:'✅ Conforme', suivre:'⚠️ À surveiller', reste:'❌ Reste à faire' };
+const ETAT_PDF = { ok:'Conforme', suivre:'A surveiller', reste:'Reste a faire' };
+let planY, planM, planSel, lastDayRendered;
+(function(){ const t = new Date(); planY = t.getFullYear(); planM = t.getMonth(); planSel = localISO(t); lastDayRendered = planSel; })();
+
+function isoOf(d){ return localISO(d); }
+function addMonthsISO(iso, n){
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y, m-1+n, 1);
+  const last = new Date(dt.getFullYear(), dt.getMonth()+1, 0).getDate();
+  dt.setDate(Math.min(d, last));
+  return isoOf(dt);
+}
+function dayLabelFR(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  const t = new Date(y, m-1, d).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function daysBetween(aISO, bISO){ return Math.round((new Date(bISO) - new Date(aISO)) / 86400000); }
+function recurLabel(n){ return n === 3 ? 'tous les 3 mois' : n === 6 ? 'tous les 6 mois' : n === 12 ? 'tous les ans' : ''; }
+function updateTopDate(){
+  const el = document.getElementById('top-date'); if(!el) return;
+  const d = new Date();
+  const t = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  el.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function collectEvents(){
+  const ev = [];
+  chantiers.forEach(c=>{
+    const name = c.site || 'Sans nom';
+    if(c.dateDebut) ev.push({ kind:'debut', date:c.dateDebut, cid:c.id, label:name, sub:'', done:c.statut !== 'planifie' });
+    if(c.dateFinPrevue) ev.push({ kind:'fin', date:c.dateFinPrevue, cid:c.id, label:name, sub:'', done:c.statut === 'termine' });
+    (c.maint || []).forEach(m=>{
+      if(m.statut === 'annulee') return;
+      ev.push({ kind:m.type, date:m.date, time:m.time || '', cid:c.id, mid:m.id, label:name, sub:m.title || MT[m.type].full, done:m.statut === 'faite', m });
+    });
+  });
+  ev.sort((a,b)=> (a.date + (a.time||'99:99')).localeCompare(b.date + (b.time||'99:99')));
+  return ev;
+}
+
+function evRowHTML(e, today){
+  const c = chantiers.find(x=>x.id === e.cid);
+  const isM = !!e.mid;
+  const late = isM && !e.done && e.date < today;
+  const meta = [];
+  if(e.time) meta.push(e.time);
+  if(c && c.client) meta.push(esc(c.client));
+  if(e.m && e.m.tech) meta.push('👤 ' + esc(e.m.tech));
+  if(e.m && e.m.recur) meta.push('🔁 ' + recurLabel(e.m.recur));
+  if(late) meta.push('<span class="late">en retard de ' + daysBetween(e.date, today) + ' j</span>');
+  if(e.done) meta.push('✓ fait');
+  const dateTxt = e.date !== planSel ? fmtDate(e.date) + ' · ' : '';
+  return `<div class="ev-row k-${e.kind}">
+    <span class="ev-tag">${MT[e.kind].label}</span>
+    <div class="ev-main"><b>${esc(e.label)}</b>${e.sub ? ' · ' + esc(e.sub) : ''}
+      <small>${dateTxt}${meta.join(' · ')}</small></div>
+    <div class="ev-actions">
+      ${isM && !e.done ? `<button class="btn btn-sm btn-primary" data-act="done" data-cid="${esc(e.cid)}" data-mid="${esc(e.mid)}">✓ Faite</button>` : ''}
+      ${isM ? `<button class="btn btn-sm" data-act="edit" data-cid="${esc(e.cid)}" data-mid="${esc(e.mid)}">Modifier</button>` : ''}
+      <button class="btn btn-sm btn-ghost" data-act="open" data-cid="${esc(e.cid)}">Ouvrir</button>
+    </div></div>`;
+}
+
+function renderPlanning(){
+  const host = document.getElementById('view-planning'); if(!host) return;
+  const today = todayISO();
+  const ev = collectEvents();
+  const byDay = {}; ev.forEach(e=>{ (byDay[e.date] = byDay[e.date] || []).push(e); });
+  const first = new Date(planY, planM, 1), startDow = (first.getDay() + 6) % 7;
+  const dim = new Date(planY, planM + 1, 0).getDate();
+  const total = Math.ceil((startDow + dim) / 7) * 7;
+  let cells = DOW_FR.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0; i<total; i++){
+    const d = new Date(planY, planM, 1 - startDow + i), iso = isoOf(d);
+    const list = byDay[iso] || [];
+    const chips = list.slice(0,2).map(e=>`<span class="cal-chip k-${e.kind} ${e.done?'done':''}">${e.time ? e.time + ' ' : ''}${esc(e.label)}</span>`).join('');
+    const more = list.length > 2 ? `<span class="cal-more">+${list.length-2}</span>` : '';
+    const dots = list.slice(0,4).map(e=>`<i class="k-${e.kind}"></i>`).join('');
+    cells += `<button type="button" class="cal-cell ${d.getMonth()!==planM?'other':''} ${iso===today?'today':''} ${iso===planSel?'sel':''}" data-d="${iso}">
+      <span class="cal-num">${d.getDate()}</span><span class="cal-chips">${chips}${more}</span><span class="cal-dots">${dots}</span></button>`;
+  }
+  const dayEv = byDay[planSel] || [];
+  const overdue = ev.filter(e=> e.mid && !e.done && e.date < today);
+  const limit = isoOf(new Date(new Date().getTime() + 30*86400000));
+  const upcoming = ev.filter(e=> !e.done && e.date >= today && e.date <= limit && e.date !== planSel).slice(0, 12);
+  host.innerHTML = `
+    <div class="cal-head">
+      <button class="btn cal-nav" data-act="prev" aria-label="Mois précédent">‹</button>
+      <h2>${MONTHS_FR[planM]} ${planY}</h2>
+      <button class="btn cal-nav" data-act="next" aria-label="Mois suivant">›</button>
+      <button class="btn btn-sm" data-act="today">Aujourd'hui</button>
+      <button class="btn btn-sm btn-primary" data-act="add" style="margin-left:auto;">+ Planifier une maintenance</button>
+    </div>
+    <div class="cal-legend">
+      <span class="k-preventive"><i></i>Maintenance préventive</span>
+      <span class="k-corrective"><i></i>Maintenance corrective</span>
+      <span class="k-debut"><i></i>Début de chantier</span>
+      <span class="k-fin"><i></i>Fin prévue</span>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div class="plan-cols">
+      <div>
+        <div class="plan-box">
+          <h3>${esc(dayLabelFR(planSel))}${planSel === today ? '<span class="today-badge">Aujourd\'hui</span>' : ''}</h3>
+          ${dayEv.length ? dayEv.map(e=>evRowHTML(e, today)).join('') : '<div class="rem-empty">Rien de prévu ce jour.</div>'}
+          <div style="margin-top:10px;"><button class="btn btn-sm" data-act="add-day">+ Planifier ce jour</button></div>
+        </div>
+      </div>
+      <div>
+        ${overdue.length ? `<div class="plan-box" style="border-color:var(--danger);"><h3 style="color:var(--danger);">⚠ En retard (${overdue.length})</h3>${overdue.slice(0,10).map(e=>evRowHTML(e, today)).join('')}</div>` : ''}
+        <div class="plan-box"><h3>À venir — 30 jours</h3>
+          ${upcoming.length ? upcoming.map(e=>evRowHTML(e, today)).join('') : '<div class="rem-empty">Aucun événement dans les 30 prochains jours.</div>'}
+        </div>
+      </div>
+    </div>`;
+  lastDayRendered = today;
+}
+document.getElementById('view-planning').addEventListener('click', e=>{
+  const cell = e.target.closest('.cal-cell');
+  if(cell){
+    planSel = cell.dataset.d;
+    const [y,m] = planSel.split('-').map(Number); planY = y; planM = m-1;
+    renderPlanning(); return;
+  }
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const act = b.dataset.act;
+  if(act === 'prev'){ planM--; if(planM < 0){ planM = 11; planY--; } renderPlanning(); }
+  else if(act === 'next'){ planM++; if(planM > 11){ planM = 0; planY++; } renderPlanning(); }
+  else if(act === 'today'){ const t = new Date(); planY = t.getFullYear(); planM = t.getMonth(); planSel = localISO(t); renderPlanning(); }
+  else if(act === 'add'){ openMaintDialog({ date: todayISO() }); }
+  else if(act === 'add-day'){ openMaintDialog({ date: planSel }); }
+  else if(act === 'open'){ openPanel(b.dataset.cid); }
+  else if(act === 'edit'){ openMaintDialog({ cid:b.dataset.cid, mid:b.dataset.mid }); }
+  else if(act === 'done'){ const c = chantiers.find(x=>x.id === b.dataset.cid); const m = c && (c.maint||[]).find(x=>x.id === b.dataset.mid); if(c && m) completeMaint(c, m); }
+});
+function goPlanning(){
+  currentView = 'planning';
+  document.querySelectorAll('.filter-chip[data-view]').forEach(ch=> ch.classList.toggle('active', ch.dataset.view === 'planning'));
+  render();
+}
+
+// --- Maintenance : enregistrer, terminer, planifier la suivante ---
+function afterPlanChange(c){
+  render();
+  if(c && document.getElementById('maint-list')){ renderMaintList(c); renderFiches(c); }
+}
+function markMaintDone(c, m){
+  if(m.statut === 'faite') return null;
+  m.statut = 'faite'; m.doneAt = todayISO();
+  let next = null;
+  if(m.recur > 0){
+    next = { id: uid(), type:m.type, date: addMonthsISO(m.doneAt, m.recur), time:m.time || '', title:m.title || '', tech:m.tech || '', notes:'', recur:m.recur, statut:'planifiee', createdAt:new Date().toISOString(), fromId:m.id };
+    c.maint.push(next);
+  }
+  c.updatedAt = new Date().toISOString();
+  return next;
+}
+async function completeMaint(c, m){
+  const next = markMaintDone(c, m);
+  await saveAll();
+  afterPlanChange(c);
+  toast(next ? 'Maintenance faite — prochaine le ' + fmtDate(next.date) : 'Maintenance marquée comme faite');
+  if(confirm('Ajouter maintenant la fiche après travaux ?')) openFicheDialog({ cid:c.id, mid:m.id });
+}
+function openMaintDialog(o){
+  o = o || {};
+  if(!chantiers.length){ toast('Créez d\'abord un chantier'); return; }
+  const c0 = o.cid ? chantiers.find(x=>x.id === o.cid) : null;
+  const m0 = (c0 && o.mid) ? (c0.maint||[]).find(x=>x.id === o.mid) : null;
+  const edit = !!m0;
+  let type = m0 ? m0.type : (o.type || 'preventive');
+  let recurTouched = edit;
+  const opts = chantiers.slice().sort((a,b)=> (a.site||'').localeCompare(b.site||'')).map(c=>`<option value="${esc(c.id)}">${esc(c.site || 'Sans nom')}${c.client ? ' — ' + esc(c.client) : ''}</option>`).join('');
+  const ov = openDialog('maint-dialog', `
+    <h2>${edit ? 'Modifier la maintenance' : 'Planifier une maintenance'}</h2>
+    <div class="fld"><label>Chantier / site</label><select id="mt-c" ${edit ? 'disabled' : ''}>${opts}</select></div>
+    <div class="fld"><label>Type de maintenance</label>
+      <div class="seg"><button type="button" data-t="preventive" class="k-preventive">🔧 Préventive</button><button type="button" data-t="corrective" class="k-corrective">🚨 Corrective</button></div>
+      <p class="muted" id="mt-hint" style="margin:6px 0 0;"></p></div>
+    <div class="fld"><label>Date</label><input id="mt-date" type="date"></div>
+    <div class="fld"><label>Heure (facultatif)</label><input id="mt-time" type="time"></div>
+    <div class="fld"><label>Objet</label><input id="mt-title" placeholder="ex. Contrôle annuel onduleur et batteries"></div>
+    <div class="fld"><label>Technicien</label><input id="mt-tech"></div>
+    <div class="fld"><label>Répéter</label>
+      <select id="mt-recur"><option value="0">Une seule fois</option><option value="3">Tous les 3 mois</option><option value="6">Tous les 6 mois</option><option value="12">Tous les ans (année N+1)</option></select>
+      <p class="muted" style="margin:6px 0 0;">Quand vous validez « Faite », la maintenance suivante est planifiée automatiquement.</p></div>
+    <div class="fld"><label>Notes</label><textarea id="mt-notes" rows="2"></textarea></div>
+    <div class="auth-err" id="mt-err"></div>
+    <div class="row-btns">${edit ? '<button class="btn btn-danger" id="mt-del">Supprimer</button>' : ''}<button class="btn" id="mt-cancel">Annuler</button><button class="btn btn-primary" id="mt-save">Enregistrer</button></div>`,
+    { box:'wide', locked:true });
+  const q = id => ov.querySelector(id);
+  q('#mt-c').value = c0 ? c0.id : chantiers[0].id;
+  q('#mt-date').value = m0 ? m0.date : (o.date || planSel || todayISO());
+  q('#mt-time').value = m0 ? (m0.time || '') : '';
+  q('#mt-title').value = m0 ? (m0.title || '') : '';
+  q('#mt-tech').value = m0 ? (m0.tech || '') : (ME ? ME.name : '');
+  q('#mt-notes').value = m0 ? (m0.notes || '') : '';
+  const setType = t=>{
+    type = t;
+    ov.querySelectorAll('.seg button').forEach(b=> b.classList.toggle('on', b.dataset.t === t));
+    q('#mt-hint').textContent = t === 'preventive'
+      ? 'Visite planifiée à l\'avance : contrôle, nettoyage, mise à jour. Peut se répéter chaque année.'
+      : 'Intervention pour réparer une panne ou un défaut constaté.';
+    if(!recurTouched) q('#mt-recur').value = t === 'preventive' ? '12' : '0';
+  };
+  q('#mt-recur').addEventListener('change', ()=>{ recurTouched = true; });
+  ov.querySelectorAll('.seg button').forEach(b=> b.addEventListener('click', ()=> setType(b.dataset.t)));
+  if(m0) q('#mt-recur').value = String(m0.recur || 0);
+  setType(type);
+  q('#mt-cancel').addEventListener('click', ()=> ov.remove());
+  const del = q('#mt-del');
+  if(del) del.addEventListener('click', async ()=>{
+    if(!confirm('Supprimer cette maintenance ?')) return;
+    c0.maint = c0.maint.filter(x=>x.id !== m0.id); c0.updatedAt = new Date().toISOString();
+    await saveAll(); ov.remove(); afterPlanChange(c0); toast('Maintenance supprimée');
+  });
+  q('#mt-save').addEventListener('click', async ()=>{
+    const c = chantiers.find(x=>x.id === q('#mt-c').value);
+    const date = q('#mt-date').value;
+    if(!c) return q('#mt-err').textContent = 'Choisissez un chantier.';
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return q('#mt-err').textContent = 'Choisissez une date.';
+    const data = { type, date, time:q('#mt-time').value, title:q('#mt-title').value.trim(), tech:q('#mt-tech').value.trim(), notes:q('#mt-notes').value.trim(), recur:parseInt(q('#mt-recur').value, 10) || 0 };
+    c.maint = c.maint || [];
+    if(edit) Object.assign(m0, data);
+    else c.maint.push(Object.assign({ id:uid(), statut:'planifiee', createdAt:new Date().toISOString() }, data));
+    c.updatedAt = new Date().toISOString();
+    await saveAll();
+    ov.remove();
+    planSel = date; { const [y,m] = date.split('-').map(Number); planY = y; planM = m-1; }
+    afterPlanChange(c);
+    toast(edit ? 'Maintenance modifiée' : 'Maintenance planifiée le ' + fmtDate(date));
+  });
+}
+
+// --- Fiche après travaux ---
+function openFicheDialog(o){
+  o = o || {};
+  if(!chantiers.length){ toast('Créez d\'abord un chantier'); return; }
+  const c0 = o.cid ? chantiers.find(x=>x.id === o.cid) : null;
+  const f0 = (c0 && o.fid) ? (c0.fiches||[]).find(x=>x.id === o.fid) : null;
+  const m0 = (c0 && o.mid) ? (c0.maint||[]).find(x=>x.id === o.mid) : null;
+  const edit = !!f0;
+  let photos = f0 ? (f0.photos || []).slice() : [];
+  const opts = chantiers.slice().sort((a,b)=> (a.site||'').localeCompare(b.site||'')).map(c=>`<option value="${esc(c.id)}">${esc(c.site || 'Sans nom')}${c.client ? ' — ' + esc(c.client) : ''}</option>`).join('');
+  const ov = openDialog('fiche-dialog', `
+    <h2>🛠 ${edit ? 'Modifier la fiche' : 'Fiche après travaux'}</h2>
+    <p class="muted">Compte rendu de l'intervention, avec les photos et fichiers pris après les travaux.</p>
+    <div class="fld"><label>Chantier / site</label><select id="fc-c" ${edit ? 'disabled' : ''}>${opts}</select></div>
+    <div class="fld"><label>Type d'intervention</label><select id="fc-kind">${Object.keys(FICHE_KINDS).map(k=>`<option value="${k}">${FICHE_KINDS[k]}</option>`).join('')}</select></div>
+    <div class="fld" id="fc-m-wrap"><label>Maintenance planifiée liée (facultatif)</label><select id="fc-m"></select>
+      <label class="chk" id="fc-done-wrap" style="margin:8px 0 0;"><input type="checkbox" id="fc-done" checked> Marquer cette maintenance comme faite</label></div>
+    <div class="fld"><label>Date des travaux</label><input id="fc-date" type="date"></div>
+    <div class="fld"><label>Technicien</label><input id="fc-tech"></div>
+    <div class="fld"><label>Travaux réalisés</label><textarea id="fc-travaux" rows="3" placeholder="Décrivez ce qui a été fait sur place"></textarea></div>
+    <div class="fld"><label>Pièces / matériel remplacés (facultatif)</label><textarea id="fc-pieces" rows="2"></textarea></div>
+    <div class="fld"><label>Observations / recommandations (facultatif)</label><textarea id="fc-obs" rows="2"></textarea></div>
+    <div class="fld"><label>État final</label><select id="fc-etat">${Object.keys(ETAT_UI).map(k=>`<option value="${k}">${ETAT_UI[k]}</option>`).join('')}</select></div>
+    <div class="fld"><label>Photos et fichiers après travaux</label>
+      <div class="doc-grid" id="fc-photos"></div>
+      <button type="button" class="btn btn-sm btn-ghost" id="fc-add-photo">📷 Ajouter des photos</button>
+      <input type="file" id="fc-file" accept="image/*" multiple style="display:none"></div>
+    <div class="auth-err" id="fc-err"></div>
+    <div class="row-btns"><button class="btn" id="fc-cancel">Annuler</button><button class="btn btn-primary" id="fc-save">Enregistrer la fiche</button></div>`,
+    { box:'wide', locked:true });
+  const q = id => ov.querySelector(id);
+  q('#fc-c').value = c0 ? c0.id : chantiers[0].id;
+  q('#fc-date').value = f0 ? f0.date : todayISO();
+  q('#fc-tech').value = f0 ? (f0.tech || '') : (ME ? ME.name : '');
+  q('#fc-kind').value = f0 ? f0.kind : (m0 ? m0.type : (o.kind || 'installation'));
+  q('#fc-travaux').value = f0 ? (f0.travaux || '') : '';
+  q('#fc-pieces').value = f0 ? (f0.pieces || '') : '';
+  q('#fc-obs').value = f0 ? (f0.obs || '') : '';
+  q('#fc-etat').value = f0 ? (f0.etat || 'ok') : 'ok';
+  const fillMaint = ()=>{
+    const c = chantiers.find(x=>x.id === q('#fc-c').value);
+    const keepId = f0 ? f0.maintId : (m0 ? m0.id : '');
+    const list = ((c && c.maint) || []).filter(m=> m.statut === 'planifiee' || m.id === keepId);
+    q('#fc-m').innerHTML = '<option value="">— Aucune —</option>' + list.map(m=>`<option value="${esc(m.id)}">${fmtDate(m.date)} · ${MT[m.type].label}${m.title ? ' · ' + esc(m.title) : ''}${m.statut === 'faite' ? ' (faite)' : ''}</option>`).join('');
+    q('#fc-m').value = list.some(m=>m.id === keepId) ? keepId : '';
+    refreshDone();
+  };
+  const refreshDone = ()=>{
+    const c = chantiers.find(x=>x.id === q('#fc-c').value);
+    const m = c && (c.maint||[]).find(x=>x.id === q('#fc-m').value);
+    q('#fc-done-wrap').style.display = (m && m.statut !== 'faite') ? '' : 'none';
+  };
+  q('#fc-c').addEventListener('change', fillMaint);
+  q('#fc-m').addEventListener('change', ()=>{
+    const c = chantiers.find(x=>x.id === q('#fc-c').value);
+    const m = c && (c.maint||[]).find(x=>x.id === q('#fc-m').value);
+    if(m && !edit) q('#fc-kind').value = m.type;
+    refreshDone();
+  });
+  fillMaint();
+  const drawPhotos = ()=>{
+    const wrap = q('#fc-photos'); wrap.innerHTML = '';
+    photos.forEach(p=>{
+      const d = document.createElement('div'); d.className = 'doc-thumb';
+      d.innerHTML = `<button type="button" class="doc-del" data-id="${esc(p.id)}">&times;</button><img src="${p.data}" alt="${esc(p.name)}">`;
+      wrap.appendChild(d);
+    });
+    wrap.querySelectorAll('.doc-del').forEach(b=> b.addEventListener('click', ()=>{ photos = photos.filter(p=>p.id !== b.dataset.id); drawPhotos(); }));
+  };
+  drawPhotos();
+  q('#fc-add-photo').addEventListener('click', ()=> q('#fc-file').click());
+  q('#fc-file').addEventListener('change', async e=>{
+    const files = Array.from(e.target.files);
+    for(const file of files){
+      try{ photos.push({ id:uid(), name:file.name, data: await compressImage(file, 1280, 0.7) }); }
+      catch(err){ toast(file.name + ' : image illisible'); }
+    }
+    e.target.value = ''; drawPhotos();
+  });
+  q('#fc-cancel').addEventListener('click', ()=> ov.remove());
+  q('#fc-save').addEventListener('click', async ()=>{
+    const c = chantiers.find(x=>x.id === q('#fc-c').value);
+    const date = q('#fc-date').value, travaux = q('#fc-travaux').value.trim();
+    if(!c) return q('#fc-err').textContent = 'Choisissez un chantier.';
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return q('#fc-err').textContent = 'Choisissez la date des travaux.';
+    if(!travaux && !photos.length) return q('#fc-err').textContent = 'Décrivez les travaux ou ajoutez au moins une photo.';
+    const maintId = q('#fc-m').value;
+    const f = { id: f0 ? f0.id : uid(), date, kind:q('#fc-kind').value, tech:q('#fc-tech').value.trim(), travaux, pieces:q('#fc-pieces').value.trim(), obs:q('#fc-obs').value.trim(),
+      etat:q('#fc-etat').value, maintId, photos, by: ME ? ME.name : '', createdAt: f0 ? f0.createdAt : new Date().toISOString() };
+    c.fiches = c.fiches || [];
+    if(edit) c.fiches = c.fiches.map(x=> x.id === f.id ? f : x); else c.fiches.push(f);
+    let next = null;
+    if(maintId && q('#fc-done').checked){
+      const m = (c.maint||[]).find(x=>x.id === maintId);
+      if(m) next = markMaintDone(c, m);
+    }
+    c.updatedAt = new Date().toISOString();
+    await saveAll();
+    ov.remove(); afterPlanChange(c);
+    toast(next ? 'Fiche enregistrée — prochaine maintenance le ' + fmtDate(next.date) : 'Fiche après travaux enregistrée');
+  });
+}
+
+// --- Listes dans la fiche chantier ---
+function renderMaintList(c){
+  const wrap = document.getElementById('maint-list'); if(!wrap) return;
+  const today = todayISO();
+  const list = (c.maint || []).filter(m=>m.statut !== 'annulee').slice().sort((a,b)=> (a.statut === 'faite') - (b.statut === 'faite') || a.date.localeCompare(b.date));
+  wrap.innerHTML = list.length ? '' : '<div style="font-size:12px;color:var(--ink-soft)">Aucune maintenance planifiée pour l\'instant.</div>';
+  list.forEach(m=>{
+    const done = m.statut === 'faite', late = !done && m.date < today;
+    const div = document.createElement('div'); div.className = 'entry k-' + m.type;
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span class="ev-tag">${MT[m.type].label}</span>
+        <div class="entry-date">${fmtDate(m.date)}${m.time ? ' · ' + m.time : ''}</div>
+        ${done ? '<span class="sav-tag sav-resolu">Faite</span>' : late ? '<span class="sav-tag sav-ouvert">En retard</span>' : '<span class="sav-tag" style="border:1px solid var(--line);">Planifiée</span>'}
+        ${m.tech ? `<span class="entry-intervenant">👤 ${esc(m.tech)}</span>` : ''}
+      </div>
+      <div class="entry-text">${esc(m.title || MT[m.type].full)}${m.recur ? ' · 🔁 ' + recurLabel(m.recur) : ''}${m.notes ? '\n' + esc(m.notes) : ''}</div>
+      <div class="entry-actions">
+        ${done ? `<button type="button" class="btn btn-sm btn-ghost" data-a="reopen" data-id="${m.id}">↺ Rouvrir</button>` : `<button type="button" class="btn btn-sm btn-primary" data-a="done" data-id="${m.id}">✓ Faite</button>`}
+        <button type="button" class="btn btn-sm" data-a="edit" data-id="${m.id}">Modifier</button>
+        <button type="button" class="btn btn-sm btn-ghost" data-a="fiche" data-id="${m.id}">🛠 Fiche</button>
+      </div>`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-a]').forEach(b=> b.addEventListener('click', async ()=>{
+    const m = c.maint.find(x=>x.id === b.dataset.id); if(!m) return;
+    if(b.dataset.a === 'edit') openMaintDialog({ cid:c.id, mid:m.id });
+    else if(b.dataset.a === 'fiche') openFicheDialog({ cid:c.id, mid:m.id });
+    else if(b.dataset.a === 'done') completeMaint(c, m);
+    else if(b.dataset.a === 'reopen'){ m.statut = 'planifiee'; delete m.doneAt; c.updatedAt = new Date().toISOString(); await saveAll(); afterPlanChange(c); }
+  }));
+}
+function renderFiches(c){
+  const wrap = document.getElementById('fiche-list'); if(!wrap) return;
+  const list = (c.fiches || []).slice().sort((a,b)=> b.date.localeCompare(a.date));
+  wrap.innerHTML = list.length ? '' : '<div style="font-size:12px;color:var(--ink-soft)">Aucune fiche après travaux pour l\'instant.</div>';
+  list.forEach(f=>{
+    const div = document.createElement('div'); div.className = 'entry';
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="entry-date">${fmtDate(f.date)}</div>
+        <span class="sav-tag" style="border:1px solid var(--line);">${esc(FICHE_KINDS[f.kind] || 'Travaux')}</span>
+        <span class="entry-intervenant">${esc(ETAT_UI[f.etat] || '')}</span>
+        ${f.tech ? `<span class="entry-intervenant">👤 ${esc(f.tech)}</span>` : ''}
+      </div>
+      <div class="entry-text">${esc(f.travaux || '')}</div>
+      ${f.pieces ? `<div class="fiche-meta"><b>Pièces :</b> ${esc(f.pieces)}</div>` : ''}
+      ${f.obs ? `<div class="fiche-meta"><b>Observations :</b> ${esc(f.obs)}</div>` : ''}
+      ${(f.photos||[]).length ? `<div class="doc-grid" style="margin-top:8px;">${f.photos.map(p=>`<div class="doc-thumb"><img src="${p.data}" alt="${esc(p.name)}"></div>`).join('')}</div>` : ''}
+      <div class="entry-actions">
+        <button type="button" class="btn btn-sm btn-ghost" data-a="pdf" data-id="${f.id}">⬇ PDF</button>
+        <button type="button" class="btn btn-sm" data-a="edit" data-id="${f.id}">Modifier</button>
+        <button type="button" class="btn btn-sm btn-ghost" data-a="del" data-id="${f.id}">Supprimer</button>
+      </div>`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('[data-a]').forEach(b=> b.addEventListener('click', async ()=>{
+    const f = c.fiches.find(x=>x.id === b.dataset.id); if(!f) return;
+    if(b.dataset.a === 'pdf') exportFichePDF(c, f);
+    else if(b.dataset.a === 'edit') openFicheDialog({ cid:c.id, fid:f.id });
+    else if(b.dataset.a === 'del'){
+      if(!confirm('Supprimer cette fiche après travaux ?')) return;
+      c.fiches = c.fiches.filter(x=>x.id !== f.id); c.updatedAt = new Date().toISOString();
+      await saveAll(); afterPlanChange(c); toast('Fiche supprimée');
+    }
+  }));
+}
+function exportFichePDF(c, f){
+  if(!window.jspdf){ toast('Export PDF indisponible'); return; }
+  try{
+    const { jsPDF } = window.jspdf, doc = new jsPDF({ unit:'mm', format:'a4' });
+    const W = 210, H = 297, M = 15; let y = M;
+    const ensure = h=>{ if(y + h > H - M){ doc.addPage(); y = M; } };
+    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('Fiche après travaux', M, y + 6); y += 11;
+    doc.setDrawColor(48,175,255); doc.setLineWidth(0.8); doc.line(M, y, W - M, y); y += 7;
+    const kv = (k, v)=>{
+      if(!v) return; const lines = doc.splitTextToSize(String(v), W - 2*M - 44); ensure(lines.length * 5 + 2);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(k, M, y);
+      doc.setFont('helvetica','normal'); doc.text(lines, M + 44, y); y += Math.max(6, lines.length * 5 + 1);
+    };
+    kv('Chantier / site', c.site); kv('Client', c.client); kv('Localisation', c.localisation);
+    kv('Date des travaux', fmtDate(f.date)); kv('Type d\'intervention', FICHE_KINDS[f.kind]); kv('Technicien', f.tech); kv('État final', ETAT_PDF[f.etat]);
+    y += 3;
+    const block = (title, text)=>{
+      if(!text) return; ensure(14);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(title, M, y); y += 5.5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      doc.splitTextToSize(String(text), W - 2*M).forEach(line=>{ ensure(5); doc.text(line, M, y); y += 5; });
+      y += 4;
+    };
+    block('Travaux réalisés', f.travaux); block('Pièces / matériel remplacés', f.pieces); block('Observations / recommandations', f.obs);
+    const ph = f.photos || [];
+    if(ph.length){
+      ensure(14); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('Photos après travaux', M, y); y += 6;
+      const cw = (W - 2*M - 6) / 2; let col = 0, rowH = 0;
+      ph.forEach(p=>{
+        try{
+          const pr = doc.getImageProperties(p.data); const h = Math.min(cw * pr.height / pr.width, 90);
+          if(col === 0){ ensure(h + 4); rowH = 0; }
+          const x = M + col * (cw + 6); doc.addImage(p.data, 'JPEG', x, y, cw, h); rowH = Math.max(rowH, h);
+          if(col === 1){ y += rowH + 5; col = 0; } else col = 1;
+        }catch(e){}
+      });
+      if(col === 1) y += rowH + 5;
+    }
+    doc.save('Fiche-' + (c.site || 'chantier').replace(/[^\w\-]+/g,'_') + '-' + f.date + '.pdf');
+    toast('PDF généré');
+  }catch(e){ toast('Erreur lors de la création du PDF'); }
+}
+
+// --- Boutons, date du jour ---
+document.getElementById('top-planning').addEventListener('click', goPlanning);
+document.getElementById('top-maint').addEventListener('click', ()=> openMaintDialog({ date: todayISO() }));
+document.getElementById('top-fiche').addEventListener('click', ()=> openFicheDialog({}));
+document.getElementById('btn-new-maint').addEventListener('click', ()=> openMaintDialog({ date: todayISO() }));
+document.getElementById('btn-new-fiche').addEventListener('click', ()=> openFicheDialog({}));
+function tickDate(){
+  updateTopDate();
+  const t = todayISO();
+  if(t !== lastDayRendered){
+    if(planSel === lastDayRendered){ const d = new Date(); planY = d.getFullYear(); planM = d.getMonth(); planSel = t; }
+    lastDayRendered = t;
+    try{ render(); }catch(e){}
+  }
+}
+updateTopDate();
+setInterval(tickDate, 30000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tickDate(); });
 
 loadAll().then(startApp);
 
