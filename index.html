@@ -657,6 +657,7 @@
 
     <div class="side-actions">
       <button class="btn btn-ghost btn-sm" id="btn-reminder">🔔 Rappel de la semaine</button>
+      <button class="btn btn-ghost btn-sm" id="btn-notif">🔊 Sons &amp; notifications</button>
       <button class="btn btn-ghost btn-sm admin-only" id="btn-admin">🛡 Administration</button>
       <button class="btn btn-ghost btn-sm" id="btn-theme">🌓 Thème clair / sombre</button>
       <button class="btn btn-ghost btn-sm admin-only" id="btn-export">⬇ Sauvegarder</button>
@@ -938,7 +939,8 @@ function importBackup(file){
   reader.readAsText(file);
 }
 
-function toast(msg){
+let toastTimer = null;
+function toast(msg, ms){
   const t = document.getElementById('toast');
   const m = document.getElementById('toast-msg');
   const check = t.querySelector('.toast-check');
@@ -950,7 +952,8 @@ function toast(msg){
   path.style.animation = 'none';
   void path.offsetWidth;
   path.style.animation = '';
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), ms || 2200);
 }
 
 function statusLabel(s){
@@ -1265,6 +1268,7 @@ function renderSavSection(){
       const item = (c.sav||[]).find(x=>x.id===tag.dataset.id);
       if(!item) return;
       item.statut = item.statut === 'resolu' ? 'ouvert' : 'resolu';
+      if(item.statut === 'resolu') playSound('sav');
       c.updatedAt = new Date().toISOString();
       saveAll();
       render();
@@ -1707,7 +1711,7 @@ function openPanel(id, isNew){
     c.dateFinPrevue = document.getElementById('f-fin').value;
     c.updatedAt = new Date().toISOString();
     await saveAll();
-    toast('Chantier enregistré');
+    toast('Chantier enregistré'); if(isNew) playSound('ok');
     render();
     closePanel();
   });
@@ -1760,6 +1764,7 @@ function renderSav(c){
       const item = c.sav.find(n=>n.id===tag.dataset.id);
       if(!item) return;
       item.statut = item.statut === 'resolu' ? 'ouvert' : 'resolu';
+      if(item.statut === 'resolu') playSound('sav');
       renderSav(c);
     });
   });
@@ -2027,7 +2032,7 @@ function syncCfg(){
   if(TEAM) return { table:'team_chantiers', col:'team_id', val:TEAM.id, key:'chantiers_sync2_team_' + TEAM.id, canDelete: TEAM.role === 'admin', team:true };
   return { table:'chantiers', col:'user_id', val:ME.id, key:'chantiers_sync2_user_' + ME.id, canDelete:true, team:false };
 }
-function getState(k){ try{ const o = JSON.parse(localStorage.getItem(k) || 'null'); if(o && o.h) return { h:o.h, t:o.t || {} }; }catch(e){} return { h:{}, t:{} }; }
+function getState(k){ try{ const o = JSON.parse(localStorage.getItem(k) || 'null'); if(o && o.h) return { h:o.h, t:o.t || {}, i:o.i }; }catch(e){} return { h:{}, t:{} }; }
 function setState(k, st){ try{ localStorage.setItem(k, JSON.stringify(st)); }catch(e){} }
 function scheduleSync(){
   if(!sb || !ME || ME.offline || applyingRemote) return;
@@ -2087,7 +2092,18 @@ async function syncAll(){
     }
     const nb = {}, nt = {};
     keep.forEach((v,id)=>{ nb[id] = hashOf(v); if(rts.has(id)) nt[id] = rts.get(id); });
-    setState(cfg.key, { h:nb, t:nt });
+    const evs = [];
+    if(st.i || Object.keys(base).length){
+      keep.forEach((v,id)=>{
+        const l = local.get(id);
+        if(!l){ if(remote.has(id) && base[id] === undefined) evs.push({ k:'chantier', c:v }); }
+        else if(v !== l){
+          const was = new Map((l.sav || []).map(x=>[x.id, x.statut]));
+          (v.sav || []).forEach(x=>{ if(x.statut === 'resolu' && was.has(x.id) && was.get(x.id) !== 'resolu') evs.push({ k:'sav', c:v, s:x }); });
+        }
+      });
+    }
+    setState(cfg.key, { h:nb, t:nt, i:1 });
     const order = chantiers.filter(c=>keep.has(c.id)).map(c=>keep.get(c.id));
     keep.forEach((v,id)=>{ if(!local.has(id)) order.push(v); });
     if(canon(order) !== canon(chantiers)){
@@ -2096,6 +2112,7 @@ async function syncAll(){
       try{ await saveAll(); }finally{ applyingRemote = false; }
       try{ render(); }catch(e){}
     }
+    if(evs.length) notifyEvents(evs);
     syncState = 'ok'; syncErr = ''; syncAt = Date.now(); syncErrShown = false;
     return true;
   }catch(e){
@@ -2355,10 +2372,14 @@ function onRtMessage(m){
   if(!m || !TEAM || m.team_id !== TEAM.id) return;
   const added = mergeMsgs([m]);
   const open = document.getElementById('chat-dialog');
-  if(open && chOf(m) === chatChannel) renderChat();
-  else if(added && m.user_id !== ME.id){
-    const prev = String(m.body || '').replace(/\s+/g,' ').slice(0, 60);
-    toast('💬 ' + m.author_name + ' : ' + prev);
+  const fromOther = added && m.user_id !== ME.id;
+  const prev = String(m.body || '').replace(/\s+/g,' ').slice(0, 90);
+  const ttl = m.author_name + (chOf(m) !== 'general' ? ' · ' + channelTitle(chOf(m)) : '');
+  if(open && chOf(m) === chatChannel){
+    renderChat();
+    if(fromOther) notify('msg', ttl, prev, 'chat-' + chOf(m), { silentToast:true });
+  }else if(fromOther){
+    notify('msg', '💬 ' + ttl, prev, 'chat-' + chOf(m));
   }
   updateChatUI();
 }
@@ -2503,6 +2524,8 @@ async function onSession(user, offline){
   }
   updateChatUI();
   afterLogin(ME);
+  setTimeout(checkReminders, 1500);
+  try{ if(!localStorage.getItem('notif_hint_v1')){ localStorage.setItem('notif_hint_v1','1'); setTimeout(()=> toast('🔔 Réglez les sonneries dans « Sons & notifications »', 5000), 2500); } }catch(e){}
 }
 
 const MINI_LOGO = `<svg class="mini-logo" viewBox="88 30 200 200" role="img" aria-label="Logo Suivi chantier">
@@ -3387,6 +3410,7 @@ document.getElementById('btn-new-maint').addEventListener('click', ()=> openMain
 document.getElementById('btn-new-fiche').addEventListener('click', ()=> openFicheDialog({}));
 function tickDate(){
   updateTopDate();
+  try{ checkReminders(); }catch(e){}
   const t = todayISO();
   if(t !== lastDayRendered){
     if(planSel === lastDayRendered){ const d = new Date(); planY = d.getFullYear(); planM = d.getMonth(); planSel = t; }
@@ -3466,6 +3490,170 @@ function showAdminPanel(){
   load();
 }
 document.getElementById('btn-admin').addEventListener('click', showAdminPanel);
+
+
+// ===== Sonneries, notifications et rappels =====
+const NOTIF_KEY = 'chantiers_notif_v1';
+const NOTIF_DEFAULT = { sound:true, vol:1, sys:false, msg:true, chantier:true, sav:true, rappel:true };
+function getNotifPrefs(){ try{ return Object.assign({}, NOTIF_DEFAULT, JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}')); }catch(e){ return Object.assign({}, NOTIF_DEFAULT); } }
+function setNotifPrefs(p){ try{ localStorage.setItem(NOTIF_KEY, JSON.stringify(p)); }catch(e){} }
+
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx){ const AC = window.AudioContext || window.webkitAudioContext; if(!AC) return null; try{ audioCtx = new AC(); }catch(e){ return null; } }
+  return audioCtx;
+}
+function unlockAudio(){ const c = getAudio(); if(c && c.state === 'suspended'){ try{ c.resume(); }catch(e){} } }
+['pointerdown','keydown','touchstart'].forEach(ev=> document.addEventListener(ev, unlockAudio, { passive:true }));
+const SOUNDS = {
+  msg:      { wave:'sine',     notes:[[880,0,.14],[1175,.15,.26]] },
+  chantier: { wave:'sine',     notes:[[523,0,.13],[659,.13,.13],[784,.26,.3]] },
+  sav:      { wave:'sine',     notes:[[659,0,.12],[784,.12,.12],[988,.24,.12],[1319,.36,.4]] },
+  rappel:   { wave:'triangle', notes:[[988,0,.16],[988,.26,.16],[988,.52,.16],[740,.8,.34]] },
+  ok:       { wave:'sine',     notes:[[784,0,.1],[1047,.11,.22]] }
+};
+function playSound(kind){
+  const p = getNotifPrefs(); if(!p.sound) return false;
+  const def = SOUNDS[kind]; if(!def) return false;
+  const c = getAudio();
+  if(c){
+    try{
+      if(c.state === 'suspended') c.resume();
+      const t0 = c.currentTime;
+      def.notes.forEach(([f, st, d])=>{
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = def.wave; o.frequency.value = f;
+        const peak = Math.max(0.02, 0.28 * (p.vol || 1));
+        g.gain.setValueAtTime(0.0001, t0 + st);
+        g.gain.exponentialRampToValueAtTime(peak, t0 + st + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + st + d);
+        o.connect(g); g.connect(c.destination);
+        o.start(t0 + st); o.stop(t0 + st + d + 0.05);
+      });
+    }catch(e){}
+  }
+  try{ if(navigator.vibrate) navigator.vibrate(kind === 'rappel' ? [200,100,200,100,200] : [120,60,120]); }catch(e){}
+  return true;
+}
+async function showSystemNotification(title, body, tag){
+  const opts = { body, tag, renotify:true, icon:'icon-192.png', badge:'icon-192.png', vibrate:[200,100,200] };
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(title, opts);
+  }catch(e){ try{ new Notification(title, opts); }catch(_){} }
+}
+function notify(kind, title, body, tag, o){
+  o = o || {};
+  const p = getNotifPrefs(); if(p[kind] === false) return false;
+  playSound(kind);
+  if(document.hidden && p.sys && ('Notification' in window) && Notification.permission === 'granted'){
+    showSystemNotification(title, body || '', tag || kind);
+  }else if(!o.silentToast){
+    toast(title + (body ? ' — ' + body : ''), o.ms || 3500);
+  }
+  return true;
+}
+function notifyEvents(ev){
+  const nc = ev.filter(e=>e.k === 'chantier'), ns = ev.filter(e=>e.k === 'sav');
+  const nm = c => (c.site || 'Sans nom') + (c.client ? ' — ' + c.client : '');
+  if(nc.length) notify('chantier', nc.length === 1 ? '🏗 Nouveau chantier' : '🏗 ' + nc.length + ' nouveaux chantiers',
+    nc.length === 1 ? nm(nc[0].c) : nc.slice(0,3).map(e=>e.c.site || 'Sans nom').join(', '), 'chantier');
+  if(ns.length) notify('sav', ns.length === 1 ? '✅ SAV résolu' : '✅ ' + ns.length + ' SAV résolus',
+    ns.length === 1 ? nm(ns[0].c) : ns.slice(0,3).map(e=>e.c.site || 'Sans nom').join(', '), 'sav');
+}
+
+// --- Rappels : maintenances et tâches du jour ---
+const REM_KEY = 'chantiers_rem_done_v1';
+function remDone(){ try{ return JSON.parse(localStorage.getItem(REM_KEY) || '{}'); }catch(e){ return {}; } }
+function remMark(key){
+  const d = remDone(), today = todayISO(), old = addDaysISO(today, -7);
+  d[key] = today; Object.keys(d).forEach(k=>{ if(d[k] < old) delete d[k]; });
+  try{ localStorage.setItem(REM_KEY, JSON.stringify(d)); }catch(e){}
+}
+function addDaysISO(iso, n){ const [y,m,d] = iso.split('-').map(Number); return localISO(new Date(y, m-1, d+n)); }
+function checkReminders(){
+  if(!ME || !chantiers) return;
+  if(getNotifPrefs().rappel === false) return;
+  const today = todayISO(), tomorrow = addDaysISO(today, 1), now = new Date();
+  const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const done = remDone();
+  const due = [], late = [], tom = [], starts = [];
+  chantiers.forEach(c=>{
+    (c.maint || []).forEach(m=>{
+      if(m.statut !== 'planifiee') return;
+      const it = { c, m };
+      if(m.date < today) late.push(it); else if(m.date === today) due.push(it); else if(m.date === tomorrow) tom.push(it);
+    });
+    if(c.dateDebut === today && c.statut === 'planifie') starts.push(c);
+  });
+  const sumKey = 's:' + today;
+  if(!done[sumKey] && (due.length || late.length || tom.length || starts.length)){
+    remMark(sumKey);
+    due.forEach(it=>{ if(it.m.time && it.m.time <= hhmm) remMark('t:' + it.m.id + ':' + today); });
+    const parts = [];
+    if(due.length) parts.push(due.length + ' maintenance' + (due.length > 1 ? 's' : '') + ' aujourd\'hui');
+    if(late.length) parts.push(late.length + ' en retard');
+    if(tom.length) parts.push(tom.length + ' demain');
+    if(starts.length) parts.push(starts.length + ' chantier' + (starts.length > 1 ? 's' : '') + ' à démarrer');
+    const names = [...new Set([...due, ...late].map(it=> it.c.site || 'Sans nom'))].slice(0,2);
+    notify('rappel', '⏰ Rappel du jour', parts.join(' · ') + (names.length ? ' — ' + names.join(', ') : ''), 'rappel-jour', { ms:7000 });
+    return;
+  }
+  due.forEach(it=>{
+    const k = 't:' + it.m.id + ':' + today;
+    if(it.m.time && it.m.time <= hhmm && !done[k]){
+      remMark(k);
+      notify('rappel', '🔧 Maintenance maintenant', (it.c.site || 'Sans nom') + ' — ' + (it.m.title || MT[it.m.type].full) + ' (' + it.m.time + ')', 'maint-' + it.m.id, { ms:7000 });
+    }
+  });
+}
+
+// --- Réglages ---
+function showNotifSettings(){
+  const p = getNotifPrefs();
+  const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+  const permTxt = perm === 'granted' ? '✅ Notifications du téléphone autorisées'
+    : perm === 'denied' ? '⛔ Bloquées : autorisez-les dans les réglages du navigateur pour ce site'
+    : perm === 'unsupported' ? 'Non disponibles sur cet appareil ou ce navigateur'
+    : 'Pas encore autorisées';
+  const row = (id, label, kind)=>`<label class="chk"><input type="checkbox" id="nf-${id}" ${p[id] !== false ? 'checked' : ''}> ${label}<button type="button" class="linkbtn" data-play="${kind}" style="margin-left:auto;">▶ Écouter</button></label>`;
+  const ov = openDialog('notif-dialog', `
+    <h2>🔊 Sons &amp; notifications</h2>
+    <p class="muted">Une sonnerie et une alerte vous préviennent des événements importants de l'équipe.</p>
+    <label class="chk"><input type="checkbox" id="nf-sound" ${p.sound ? 'checked' : ''}> Activer les sonneries</label>
+    <div class="fld"><label>Volume</label>
+      <select id="nf-vol"><option value="0.5">Faible</option><option value="1">Normal</option><option value="1.6">Fort</option></select></div>
+    <label class="chk"><input type="checkbox" id="nf-sys" ${p.sys && perm === 'granted' ? 'checked' : ''} ${perm === 'unsupported' ? 'disabled' : ''}> Notifications sur le téléphone (quand l'app est en arrière-plan)</label>
+    <p class="muted" id="nf-perm" style="margin:-2px 0 10px;text-align:left;">${permTxt}</p>
+    <div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin:6px 0 6px;">M'alerter pour</div>
+    ${row('msg', '💬 Nouveaux messages', 'msg')}
+    ${row('chantier', '🏗 Nouveaux chantiers ajoutés', 'chantier')}
+    ${row('sav', '✅ SAV résolus', 'sav')}
+    ${row('rappel', '⏰ Rappels : maintenances et tâches du jour', 'rappel')}
+    <div class="row-btns"><button class="btn" id="nf-cancel">Fermer</button><button class="btn btn-primary" id="nf-save">Enregistrer</button></div>`, { box:'wide' });
+  const q = id => ov.querySelector(id);
+  q('#nf-vol').value = String(p.vol || 1);
+  ov.querySelectorAll('[data-play]').forEach(b=> b.addEventListener('click', e=>{
+    e.preventDefault(); e.stopPropagation();
+    const keep = getNotifPrefs(); setNotifPrefs(Object.assign({}, keep, { sound:true, vol:parseFloat(q('#nf-vol').value) || 1 }));
+    playSound(b.dataset.play); setNotifPrefs(keep);
+  }));
+  q('#nf-sys').addEventListener('change', async ()=>{
+    if(q('#nf-sys').checked && ('Notification' in window)){
+      if(Notification.permission === 'default'){ try{ await Notification.requestPermission(); }catch(e){} }
+      const pm = Notification.permission;
+      if(pm !== 'granted') q('#nf-sys').checked = false;
+      q('#nf-perm').textContent = pm === 'granted' ? '✅ Notifications du téléphone autorisées' : pm === 'denied' ? '⛔ Bloquées : autorisez-les dans les réglages du navigateur pour ce site' : 'Pas encore autorisées';
+    }
+  });
+  q('#nf-cancel').addEventListener('click', ()=> ov.remove());
+  q('#nf-save').addEventListener('click', ()=>{
+    setNotifPrefs({ sound:q('#nf-sound').checked, vol:parseFloat(q('#nf-vol').value) || 1, sys:q('#nf-sys').checked,
+      msg:q('#nf-msg').checked, chantier:q('#nf-chantier').checked, sav:q('#nf-sav').checked, rappel:q('#nf-rappel').checked });
+    ov.remove(); toast('Réglages enregistrés');
+  });
+}
+document.getElementById('btn-notif').addEventListener('click', showNotifSettings);
 
 loadAll().then(startApp);
 

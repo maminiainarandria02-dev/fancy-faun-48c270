@@ -1,5 +1,5 @@
 // Change ce numéro à chaque mise à jour de l'application pour forcer le rafraîchissement
-const CACHE = 'chantiers-v12';
+const CACHE = 'chantiers-v13';
 const FILES = [
   './', './index.html', './manifest.json',
   './jspdf.umd.min.js', './supabase.js',
@@ -33,6 +33,17 @@ self.addEventListener('fetch', e => {
         return res;
       }).catch(() => hit);
       return hit || net;
+    })
+  );
+});
+
+// Un clic sur une notification ramène l'utilisateur dans l'application
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type:'window', includeUncontrolled:true }).then(list => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow('./');
     })
   );
 });
