@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Suivi de chantier et installation</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#272622">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('chantiers_theme')||'dark';}catch(e){document.documentElement.dataset.theme='dark';}</script>
 <meta name="mobile-web-app-capable" content="yes">
@@ -541,6 +541,40 @@
   .fiche-meta{font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.5;}
   .entry-actions{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
   .entry-actions button{font-size:12px;}
+
+  /* ===== Administration & responsive ===== */
+  body:not(.is-padmin) .admin-only{display:none !important;}
+  .toast{z-index:400 !important; max-width:min(92vw,440px); white-space:normal; text-align:left; line-height:1.4;}
+  .dialog-overlay{height:100vh; height:100dvh; overflow-y:auto;}
+  .dialog{max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); overflow-wrap:anywhere;}
+  .chat-box{height:calc(100vh - 20px); height:calc(100dvh - 20px);}
+  .chat-input{padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));}
+  .dialog input, .dialog select, .dialog textarea{font-size:16px;}
+  .ad-card{border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:10px; background:var(--paper-2);}
+  .ad-card h4{margin:0 0 4px; font-size:14px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .ad-meta{font-size:11.5px; color:var(--ink-soft); line-height:1.6;}
+  .ad-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center;}
+  .ad-actions input, .ad-actions select{flex:1 1 150px; min-width:0;}
+  .ad-sec{font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; margin:16px 0 8px;}
+  @media(max-width:700px){
+    .top-actions{width:100%;} .top-actions .btn{flex:1 1 auto;}
+  }
+  @media(max-width:600px){
+    .overlay{padding:6px;} .panel{border-radius:16px;}
+    .dialog-overlay{padding:8px;}
+    .dialog{padding:20px 16px; border-radius:18px;}
+    .dialog h2{font-size:18px;}
+    .dialog.wide{width:100%;}
+    .chat-ov{padding:0;}
+    .chat-box{width:100%; height:100vh; height:100dvh; border-radius:0; border:none;}
+    .chat-head{padding:10px 12px;}
+    .chat-head h2{font-size:15px;}
+    .chat-head select{max-width:48%; font-size:14px;}
+    .chat-list{padding:10px 12px;}
+    .msg{max-width:92%;}
+    .chat-input textarea{font-size:16px;}
+    .toast{bottom:calc(14px + env(safe-area-inset-bottom, 0px)); font-size:12.5px;}
+  }
 </style>
 </head>
 <body>
@@ -592,13 +626,14 @@
 
     <div class="side-actions">
       <button class="btn btn-ghost btn-sm" id="btn-reminder">🔔 Rappel de la semaine</button>
+      <button class="btn btn-ghost btn-sm admin-only" id="btn-admin">🛡 Administration</button>
       <button class="btn btn-ghost btn-sm" id="btn-theme">🌓 Thème clair / sombre</button>
-      <button class="btn btn-ghost btn-sm" id="btn-export">⬇ Sauvegarder</button>
-      <button class="btn btn-ghost btn-sm" id="btn-import">⬆ Restaurer</button>
+      <button class="btn btn-ghost btn-sm admin-only" id="btn-export">⬇ Sauvegarder</button>
+      <button class="btn btn-ghost btn-sm admin-only" id="btn-import">⬆ Restaurer</button>
       <input type="file" id="import-input" accept="application/json" style="display:none">
     </div>
 
-    <div class="side-status">
+    <div class="side-status admin-only">
       <div class="side-nav-label" style="padding:0; margin-bottom:0;">Stockage</div>
       <span id="file-status">Vérification du fichier lié…</span>
       <button class="btn btn-sm btn-ghost" id="btn-link-file">Lier un fichier (ordinateur ou dossier Drive)</button>
@@ -736,6 +771,7 @@ function updateFileStatus(){
 }
 
 async function linkFile(){
+  if(!canBackup()){ toast('Réservé à l\'administrateur de la plateforme'); return; }
   if(!hasFileSystemAccess){ toast('Non pris en charge par ce navigateur'); return; }
   try{
     const handle = await window.showSaveFilePicker({
@@ -776,6 +812,7 @@ async function tryRestoreFileHandle(){
 }
 
 async function reconnectFile(){
+  if(!canBackup()){ toast('Réservé à l\'administrateur de la plateforme'); return; }
   if(!fileHandle){ return linkFile(); }
   try{
     const perm = await fileHandle.requestPermission({ mode:'readwrite' });
@@ -818,7 +855,7 @@ async function loadAll(){
 
 async function saveAll(){
   const json = JSON.stringify(chantiers);
-  if(fileLinkState === 'linked' && fileHandle){
+  if(fileLinkState === 'linked' && fileHandle && canBackup()){
     try{
       await writeToFileHandle(fileHandle, chantiers);
     }catch(e){
@@ -839,6 +876,7 @@ async function saveAll(){
 }
 
 function exportBackup(){
+  if(!canBackup()){ toast('Réservé à l\'administrateur de la plateforme'); return; }
   const blob = new Blob([JSON.stringify(chantiers, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -852,6 +890,7 @@ function exportBackup(){
 }
 
 function importBackup(file){
+  if(!canBackup()){ toast('Réservé à l\'administrateur de la plateforme'); return; }
   const reader = new FileReader();
   reader.onload = () => {
     try{
@@ -1885,9 +1924,11 @@ let syncTimer = null, syncBusy = false, syncAgain = false, applyingRemote = fals
 let syncState = 'idle', syncErr = '', syncAt = 0, syncErrShown = false;
 
 function currentAccount(){ return ME; }
+function canBackup(){ return !!(ME && ME.isPlatformAdmin); }
+function applyRoleUI(){ document.body.classList.toggle('is-padmin', canBackup()); }
 function setMe(user, offline){
   const md = user.user_metadata || {};
-  ME = { id:user.id, email:user.email || '', offline: !!offline,
+  ME = { id:user.id, email:user.email || '', offline: !!offline, isPlatformAdmin:false,
     name: md.name || (user.email || '').split('@')[0] || 'vous',
     welcomed: !!md.welcomed,
     remind: md.remind || {on:false, planifie:true, encours:true, termine:true, lastWeek:''} };
@@ -1920,6 +1961,9 @@ function updateProfileChip(){
 }
 function frError(e){
   const m = String((e && e.message) || e || '').toLowerCase();
+  if(m.includes('compte_introuvable')) return 'Aucun compte avec cet e-mail : la personne doit d\'abord créer son compte.';
+  if(m.includes('action_refusee')) return 'Action non autorisée.';
+  if(m.includes('dernier_admin')) return 'Il faut au moins un administrateur dans l\'équipe.';
   if(m.includes('code_invalide')) return 'Code d\'invitation invalide.';
   if(m.includes('deja_membre')) return 'Vous faites déjà partie d\'une équipe.';
   if(m.includes('reserve_admin')) return 'Action réservée à l\'administrateur.';
@@ -2185,6 +2229,10 @@ function renderTeamSection(box, ov){
       <div class="row-btns" style="margin-top:0;"><button class="btn btn-sm" id="tm-copy">Copier</button><button class="btn btn-sm" id="tm-regen">Nouveau code</button></div>` : ''}
     <div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin:12px 0 6px;">Membres</div>
     <div id="tm-list" class="muted">Chargement…</div>
+    ${admin ? `<div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin:14px 0 6px;">Ajouter une personne</div>
+      <div class="fld"><input id="tm-add-email" type="email" placeholder="E-mail de la personne (compte déjà créé)"></div>
+      <div class="fld"><input id="tm-add-name" placeholder="Nom affiché (facultatif)"></div>
+      <button class="btn btn-sm" id="tm-add">+ Ajouter à l'équipe</button><div class="auth-err" id="tm-add-err"></div>` : ''}
     ${admin ? '' : '<button class="btn btn-danger btn-sm" id="tm-leave" style="margin-top:10px;">Quitter l\'équipe</button>'}`;
   const loadList = async ()=>{
     const list = box.querySelector('#tm-list'); if(!list) return;
@@ -2192,14 +2240,29 @@ function renderTeamSection(box, ov){
     if(error){ list.textContent = frError(error); return; }
     list.innerHTML = data.map(m=>`<div class="rem-item" style="display:flex;justify-content:space-between;align-items:center;cursor:default;">
       <span>${escapeHtml(m.display_name)}${m.user_id === ME.id ? ' (vous)' : ''}<small>${m.role === 'admin' ? 'Administrateur' : 'Membre'}</small></span>
-      ${admin && m.user_id !== ME.id ? `<button class="linkbtn" data-rm="${m.user_id}" style="color:var(--danger);">Retirer</button>` : ''}</div>`).join('');
+      ${admin && m.user_id !== ME.id ? `<span style="display:flex;gap:12px;flex-wrap:wrap;"><button class="linkbtn" data-role="${m.user_id}" data-to="${m.role === 'admin' ? 'member' : 'admin'}">${m.role === 'admin' ? 'Rendre membre' : 'Nommer admin'}</button><button class="linkbtn" data-rm="${m.user_id}" style="color:var(--danger);">Retirer</button></span>` : ''}</div>`).join('');
     list.querySelectorAll('[data-rm]').forEach(b=> b.addEventListener('click', async ()=>{
       if(!confirm('Retirer ce membre de l\'équipe ?')) return;
-      const r = await sb.from('team_members').delete().eq('team_id', TEAM.id).eq('user_id', b.dataset.rm);
+      const r = await sb.rpc('remove_team_member', { tid: TEAM.id, member_id: b.dataset.rm });
       if(r.error) toast(frError(r.error)); else { toast('Membre retiré'); loadList(); }
+    }));
+    list.querySelectorAll('[data-role]').forEach(b=> b.addEventListener('click', async ()=>{
+      const r = await sb.rpc('set_member_role', { tid: TEAM.id, member_id: b.dataset.role, new_role: b.dataset.to });
+      if(r.error) toast(frError(r.error)); else { toast(b.dataset.to === 'admin' ? 'Nommé administrateur' : 'Rôle modifié'); loadList(); }
     }));
   };
   loadList();
+  const addB = box.querySelector('#tm-add');
+  if(addB) addB.addEventListener('click', async ()=>{
+    const email = box.querySelector('#tm-add-email').value.trim(), nm = box.querySelector('#tm-add-name').value.trim();
+    const err = box.querySelector('#tm-add-err');
+    if(!/^\S+@\S+\.\S+$/.test(email)){ err.textContent = 'Adresse e-mail invalide.'; return; }
+    err.textContent = '';
+    const r = await sb.rpc('add_team_member', { tid: TEAM.id, member_email: email, member_name: nm });
+    if(r.error){ err.textContent = frError(r.error); return; }
+    box.querySelector('#tm-add-email').value = ''; box.querySelector('#tm-add-name').value = '';
+    toast('Personne ajoutée à l\'équipe'); loadList();
+  });
   const copy = box.querySelector('#tm-copy');
   if(copy) copy.addEventListener('click', ()=>{ try{ navigator.clipboard.writeText(fmtCode(TEAM.invite)).then(()=>toast('Code copié')); }catch(e){} });
   const regen = box.querySelector('#tm-regen');
@@ -2388,7 +2451,7 @@ function initSupabase(){
   sb = window.supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
   sb.auth.onAuthStateChange((event, session)=>{
     if(event === 'PASSWORD_RECOVERY'){ recoveryMode = true; setTimeout(showNewPassword, 0); return; }
-    if(event === 'SIGNED_OUT'){ ME = null; updateProfileChip(); return; }
+    if(event === 'SIGNED_OUT'){ ME = null; applyRoleUI(); updateProfileChip(); return; }
     if(event === 'SIGNED_IN' && session && session.user && !recoveryMode && (!ME || ME.id !== session.user.id)){
       setTimeout(()=> onSession(session.user), 0);
     }
@@ -2400,6 +2463,7 @@ async function onSession(user, offline){
   closeDialog('auth-screen');
   updateProfileChip();
   await loadMembership();
+  await loadPlatformAdmin();
   if(reconcileScope() === false) ME.offline = true;   // mode dégradé : pas de synchronisation
   if(!ME.offline){
     startRealtime(); startPoll();
@@ -2528,6 +2592,18 @@ function showNewPassword(){
   ov.querySelector('#np-1').focus();
 }
 
+async function loadPlatformAdmin(){
+  const key = 'chantiers_padmin_' + ME.id;
+  const cached = ()=>{ try{ return localStorage.getItem(key) === '1'; }catch(e){ return false; } };
+  let v = false;
+  if(!sb || ME.offline){ v = cached(); }
+  else{
+    const r = await sb.rpc('is_platform_admin');
+    if(!r.error){ v = r.data === true; try{ localStorage.setItem(key, v ? '1' : '0'); }catch(e){} }
+    else v = cached();
+  }
+  ME.isPlatformAdmin = v; applyRoleUI();
+}
 function afterLogin(acc){ updateProfileChip(); continueAfterLogin(acc); }
 function niceName(n){ n=(n||'').trim(); return n ? n.charAt(0).toUpperCase()+n.slice(1) : n; }
 function continueAfterLogin(acc){
@@ -2553,7 +2629,8 @@ async function logout(){
   try{ if(sb) await sb.auth.signOut(); }catch(e){}
   stopRealtime(); stopPoll();
   ME = null; TEAM = null; teamReady = false; chatMsgs = []; chatLoaded = new Set(); syncState = 'idle'; syncAt = 0;
-  closeDialog('chat-dialog'); closeDialog('team-dialog');
+  closeDialog('chat-dialog'); closeDialog('team-dialog'); closeDialog('admin-dialog');
+  applyRoleUI();
   updateChatUI();
   closeDialog('profile-dialog'); closeDialog('reminder-dialog'); closeDialog('weekly-dialog');
   try{ closePanel(); }catch(e){}
@@ -3215,6 +3292,75 @@ function tickDate(){
 updateTopDate();
 setInterval(tickDate, 30000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tickDate(); });
+
+
+// ===== Administration de la plateforme =====
+function showAdminPanel(){
+  if(!canBackup() || !sb) return;
+  const ov = openDialog('admin-dialog', `
+    <h2>🛡 Administration</h2>
+    <p class="muted">Gérez toutes les équipes et tous les comptes de la plateforme.</p>
+    <div id="ad-body" class="muted">Chargement…</div>
+    <div class="row-btns"><button class="btn" id="ad-refresh">Actualiser</button><button class="btn btn-primary" id="ad-close">Fermer</button></div>`, { box:'wide' });
+  const body = ov.querySelector('#ad-body');
+  const dt = iso => iso ? fmtDate(String(iso).slice(0,10)) : '—';
+  async function load(){
+    const r = await sb.rpc('admin_overview');
+    if(r.error){ body.textContent = frError(r.error); return; }
+    const { users = [], teams = [] } = r.data || {};
+    const teamOpts = teams.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
+    body.innerHTML = `
+      <div class="ad-sec">Équipes (${teams.length})</div>
+      ${teams.length ? teams.map(t=>`<div class="ad-card">
+        <h4>👥 ${esc(t.name)}</h4>
+        <div class="ad-meta">Code d'invitation : <b>${esc(fmtCode(t.invite_code))}</b> · ${t.members} membre(s) · ${t.chantiers} chantier(s) · ${t.messages} message(s)</div>
+        <div class="ad-actions">
+          <input type="email" placeholder="E-mail à ajouter" data-email="${esc(t.id)}">
+          <button class="btn btn-sm" data-act="addm" data-tid="${esc(t.id)}">+ Ajouter</button>
+          <button class="btn btn-sm btn-danger" data-act="delteam" data-tid="${esc(t.id)}" data-name="${esc(t.name)}">Supprimer l'équipe</button>
+        </div></div>`).join('') : '<div class="rem-empty">Aucune équipe.</div>'}
+      <div class="ad-sec">Comptes (${users.length})</div>
+      ${users.map(u=>`<div class="ad-card">
+        <h4>${esc(u.name || u.email)}${u.id === ME.id ? ' <span class="role-pill">vous</span>' : ''}</h4>
+        <div class="ad-meta">${esc(u.email)}<br>${u.team_name ? '👥 ' + esc(u.team_name) + ' · ' + (u.role === 'admin' ? 'Administrateur' : 'Membre') : 'Aucune équipe'} · Créé le ${dt(u.created_at)} · Dernière connexion : ${dt(u.last_sign_in_at)}</div>
+        <div class="ad-actions">
+          ${u.team_id ? `<button class="btn btn-sm" data-act="role" data-tid="${esc(u.team_id)}" data-uid="${esc(u.id)}" data-to="${u.role === 'admin' ? 'member' : 'admin'}">${u.role === 'admin' ? 'Rendre membre' : 'Nommer admin'}</button>
+            <button class="btn btn-sm" data-act="rmm" data-tid="${esc(u.team_id)}" data-uid="${esc(u.id)}">Retirer de l'équipe</button>`
+          : (teams.length ? `<select data-sel="${esc(u.id)}">${teamOpts}</select><button class="btn btn-sm" data-act="addu" data-uid="${esc(u.id)}" data-email="${esc(u.email)}" data-name="${esc(u.name || '')}">Ajouter à l'équipe</button>` : '')}
+          ${u.id !== ME.id ? `<button class="btn btn-sm btn-danger" data-act="deluser" data-uid="${esc(u.id)}" data-email="${esc(u.email)}">Supprimer le compte</button>` : ''}
+        </div></div>`).join('')}`;
+  }
+  ov.querySelector('#ad-close').addEventListener('click', ()=> ov.remove());
+  ov.querySelector('#ad-refresh').addEventListener('click', load);
+  body.addEventListener('click', async e=>{
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const act = b.dataset.act; let r = null, msg = '';
+    if(act === 'addm'){
+      const inp = body.querySelector(`[data-email="${b.dataset.tid}"]`), email = inp.value.trim();
+      if(!email) return toast('Entrez l\'e-mail de la personne');
+      r = await sb.rpc('add_team_member', { tid:b.dataset.tid, member_email:email, member_name:'' }); msg = 'Personne ajoutée';
+    }else if(act === 'addu'){
+      const sel = body.querySelector(`[data-sel="${b.dataset.uid}"]`);
+      r = await sb.rpc('add_team_member', { tid:sel.value, member_email:b.dataset.email, member_name:b.dataset.name }); msg = 'Personne ajoutée';
+    }else if(act === 'rmm'){
+      if(!confirm('Retirer cette personne de son équipe ?')) return;
+      r = await sb.rpc('remove_team_member', { tid:b.dataset.tid, member_id:b.dataset.uid }); msg = 'Personne retirée';
+    }else if(act === 'role'){
+      r = await sb.rpc('set_member_role', { tid:b.dataset.tid, member_id:b.dataset.uid, new_role:b.dataset.to }); msg = 'Rôle modifié';
+    }else if(act === 'delteam'){
+      if(!confirm('Supprimer l\'équipe « ' + b.dataset.name + ' » ?\n\nTous ses chantiers partagés et ses messages seront supprimés définitivement.')) return;
+      if(!confirm('Dernière confirmation : supprimer définitivement cette équipe ?')) return;
+      r = await sb.rpc('admin_delete_team', { tid:b.dataset.tid }); msg = 'Équipe supprimée';
+    }else if(act === 'deluser'){
+      if(!confirm('Supprimer le compte ' + b.dataset.email + ' ?\n\nSes données personnelles seront supprimées définitivement.')) return;
+      r = await sb.rpc('admin_delete_user', { target:b.dataset.uid }); msg = 'Compte supprimé';
+    }
+    if(!r) return;
+    if(r.error) toast(frError(r.error)); else { toast(msg); load(); }
+  });
+  load();
+}
+document.getElementById('btn-admin').addEventListener('click', showAdminPanel);
 
 loadAll().then(startApp);
 
