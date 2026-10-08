@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Suivi de chantier et installation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#272622">
+<meta name="theme-color" content="#17181B">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('chantiers_theme')||'dark';}catch(e){document.documentElement.dataset.theme='dark';}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -642,6 +642,85 @@
   .side-profile .avatar{overflow:hidden;}
   .avatar-big{width:88px !important; height:88px !important; font-size:34px !important; overflow:hidden; cursor:pointer; border:3px solid var(--line);}
   .msg .who{display:flex; align-items:center; gap:6px;}
+
+  /* ===== Design v2 : compact, lisible, sans décor superflu ===== */
+  :root{ --ink-soft:#B4B2AA; }
+  :root[data-theme="light"]{ --ink-soft:#5A5953; }
+  .grain{display:none;}
+  header.topbar{border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:18px; gap:12px;}
+  .topbar .brand-plate{background:none; border:0; box-shadow:none; padding:0; gap:10px;}
+  .topbar .brand-logo{width:34px; height:34px;}
+  .topbar .title3d{color:var(--ink); text-shadow:none; font-size:22px; font-weight:700; letter-spacing:-0.01em;}
+  .topbar .brand-plate .sub{color:var(--ink-soft); margin-top:2px;}
+  .topbar .search{flex:1 1 220px; min-height:40px;}
+  .top-actions .btn{min-height:40px;}
+  /* Doublons : ces actions existent déjà dans l'en-tête */
+  .sidebar #btn-new-maint,.sidebar #btn-new-fiche,.sidebar #btn-settings{display:none;}
+  /* Indicateurs */
+  .overview-grid{gap:10px; margin-bottom:20px;}
+  .stat-tile{border-color:var(--line); border-radius:10px;}
+  .stat-tile .stat-label{font-size:11px;}
+  .stat-tile .stat-value{font-size:26px;}
+  .stat-tile.stat-danger{border-color:var(--stat-red);}
+  /* Cartes chantier : plus sobres, sans anneau */
+  .grid{gap:34px 14px;}
+  .card{border:1px solid var(--line); border-radius:12px; box-shadow:none; padding:30px 14px 12px;}
+  .card:hover{border-color:var(--rust);}
+  .card:hover .badge-ring{transform:none;}
+  .badge-ring{display:none;}
+  .card-badge{width:60px; height:60px; margin-top:-46px;}
+  .badge-circle{box-shadow:none; border-width:2px;}
+  .badge-circle svg{width:24px; height:24px;}
+  .badge-code{font-size:10px;}
+  .badge-code.dup,.badge-code.miss{background:var(--tint-red); color:var(--stat-red-dark); border:1px solid var(--stat-red);}
+  .card h3{font-size:16px;}
+  .card-meta{font-size:13px;}
+  .card-foot{font-size:12px;}
+  .flag-dup{font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--tint-red); color:var(--stat-red-dark); border:1px solid var(--stat-red); text-transform:uppercase;}
+  /* Bandeau « À traiter maintenant » */
+  .todo-box{grid-column:1/-1; background:var(--white); border:1px solid var(--line); border-left:4px solid var(--stat-red); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;}
+  .todo-title{display:flex; align-items:baseline; gap:10px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;}
+  .todo-title span{font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:500; color:var(--ink-soft);}
+  .todo-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .todo-item{min-height:44px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font:inherit; font-size:13.5px; cursor:pointer; text-align:left; display:flex; flex-direction:column; gap:1px;}
+  .todo-item:hover{border-color:var(--stat-red);}
+  .todo-item small{color:var(--stat-red-dark); font-family:'JetBrains Mono',monospace; font-size:11px;}
+
+  /* ===== Connexion v2 : même palette que l'application ===== */
+  .dialog-overlay.auth-screen{
+    --paper:#17181B; --paper-2:#1E2024; --white:#222428; --ink:#ECEEF1; --ink-soft:#B4B8C0; --line:#3A3E45;
+    --rust:#4DB2FF; --rust-dark:#86D0FF; --on-accent:#0B1B29; --danger:#FF9A9A;
+  }
+  :root[data-theme="light"] .dialog-overlay.auth-screen{
+    --paper:#F3F5F8; --paper-2:#FFFFFF; --white:#FFFFFF; --ink:#1B1D21; --ink-soft:#5A5F68; --line:#D3D9E2;
+    --rust:#1A86D6; --rust-dark:#0F65A8; --on-accent:#FFFFFF; --danger:#D93A2E;
+  }
+  .auth-screen .btn-primary{box-shadow:none; background:var(--rust); color:var(--on-accent); min-height:48px;}
+  .auth-screen .btn-primary:active{transform:none; box-shadow:none; filter:brightness(.92);}
+  .auth-screen .dialog{border-radius:14px;}
+  .auth-screen input:focus{outline:2px solid var(--rust); outline-offset:1px; border-color:var(--rust);}
+  .auth-screen.splash h1.title3d, .splash h1.title3d{color:var(--ink); text-shadow:none; font-weight:700; letter-spacing:-0.01em;}
+  .dialog-overlay.quit-screen{background:#17181B; color:#ECEEF1;}
+  .dialog-overlay.quit-screen h2{color:#ECEEF1;}
+  .dialog-overlay.quit-screen p{color:#B4B8C0;}
+
+  /* Logo technicien (contour) */
+  .splash-logo{width:min(190px,56vw);}
+  .dialog-overlay.quit-screen .splash-logo{width:min(150px,44vw);}
+  .mini-logo{width:72px;}
+  .brand-logo svg{stroke-width:7;}
+
+  /* ===== Écran de transition « Connexion… » entre deux fenêtres ===== */
+  #transition-loader{position:fixed; inset:0; z-index:900; background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:var(--ink); animation:tl-in .15s ease-out both;}
+  #transition-loader.out{opacity:0; transition:opacity .2s ease; pointer-events:none;}
+  .tl-spin{width:46px; height:46px; border-radius:50%; border:4px solid var(--line); border-top-color:var(--rust); animation:tl-rot .8s linear infinite;}
+  .tl-text{font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.04em; color:var(--ink-soft);}
+  .tl-bar{width:min(220px,60vw); height:4px; border-radius:4px; background:var(--line); overflow:hidden;}
+  .tl-bar i{display:block; height:100%; width:100%; background:var(--rust); transform-origin:left; animation:tl-fill var(--tl-ms,1200ms) linear both;}
+  @keyframes tl-rot{to{transform:rotate(360deg);}}
+  @keyframes tl-in{from{opacity:0;} to{opacity:1;}}
+  @keyframes tl-fill{from{transform:scaleX(0);} to{transform:scaleX(1);}}
+  @media (prefers-reduced-motion: reduce){ .tl-spin{animation:none;} }
 </style>
 </head>
 <body>
@@ -1095,16 +1174,6 @@ function renderOverview(){
         <div class="stat-value">${moyenne.toFixed(1)}</div>
         <div class="stat-sub">SAV / chantier concerné</div>
       </div>
-      <div class="stat-tile">
-        <div class="stat-label">Niveau max</div>
-        <div class="stat-value">${maxC.count}</div>
-        <div class="stat-sub">${escapeHtml(maxC.site)}</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-label">Niveau min</div>
-        <div class="stat-value">${minC.count}</div>
-        <div class="stat-sub">${escapeHtml(minC.site)}</div>
-      </div>
     `;
   }
 
@@ -1184,6 +1253,31 @@ function renderChantiers(){
     return (b.updatedAt||'').localeCompare(a.updatedAt||'');
   });
 
+  // Références en double (pour les signaler)
+  const codeCount = {};
+  chantiers.forEach(c => { const k = (c.code||'').trim(); if(k) codeCount[k] = (codeCount[k]||0) + 1; });
+
+  // Bandeau « À traiter maintenant » : chantiers avec SAV ouvert
+  if(activeFilter === 'tous' && !searchTerm.trim()){
+    const todo = chantiers.filter(c => (c.sav||[]).some(x => x.statut !== 'resolu'));
+    if(todo.length){
+      const box = document.createElement('div');
+      box.className = 'todo-box';
+      const nbOuv = todo.reduce((n,c)=> n + c.sav.filter(x=>x.statut!=='resolu').length, 0);
+      box.innerHTML = `<div class="todo-title">À traiter maintenant <span>${nbOuv} SAV ouvert${nbOuv!==1?'s':''}</span></div><div class="todo-list"></div>`;
+      const listEl = box.querySelector('.todo-list');
+      todo.forEach(c => {
+        const n = c.sav.filter(x=>x.statut!=='resolu').length;
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'todo-item';
+        b.innerHTML = `${escapeHtml(c.site || 'Sans nom')}<small>${n} SAV ouvert${n!==1?'s':''}${c.intervenant ? ' · ' + escapeHtml(c.intervenant) : ''}</small>`;
+        b.onclick = () => openPanel(c.id);
+        listEl.appendChild(b);
+      });
+      grid.appendChild(box);
+    }
+  }
+
   const ordered = [...grouped, ...ungrouped];
   const hasGroups = grouped.length > 0;
   let lastGroup = undefined;
@@ -1222,11 +1316,12 @@ function renderChantiers(){
       <div class="card-badge" style="--rot:${hashRot(c.id)}deg; --sw-a:${sw.a}; --sw-b:${sw.b};">
         <div class="badge-ring"></div>
         <div class="badge-circle">${statusIcon(c.statut)}</div>
-        <div class="badge-code">${c.code || '—'}</div>
+        <div class="badge-code${!(c.code||'').trim() ? ' miss' : (codeCount[(c.code||'').trim()] > 1 ? ' dup' : '')}">${(c.code||'').trim() ? c.code : 'Réf. manquante'}</div>
       </div>
       <div class="card-top">
         <h3>${escapeHtml(c.site || 'Sans nom')}</h3>
         <span class="status-tag ${statusClass(c.statut)}">${statusLabel(c.statut)}</span>
+        ${(c.code||'').trim() && codeCount[(c.code||'').trim()] > 1 ? '<span class="flag-dup">Réf. en double</span>' : ''}
         ${g ? `<span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:600; color:var(--ink-soft); margin-top:2px;">📁 ${escapeHtml(g)}</span>` : ''}
       </div>
       <div class="card-meta">
@@ -1341,6 +1436,7 @@ document.querySelectorAll('.filter-chip[data-view]').forEach(chip=>{
   chip.addEventListener('click', ()=>{
     document.querySelectorAll('.filter-chip[data-view]').forEach(c=>c.classList.remove('active'));
     chip.classList.add('active');
+    showTransition();
     currentView = chip.dataset.view;
     if(currentView === 'sav'){ savFilter = chip.dataset.f; }
     else if(currentView === 'chantiers'){ activeFilter = chip.dataset.f; }
@@ -1479,6 +1575,7 @@ function openPanel(id, isNew){
   currentId = id;
   const c = chantiers.find(x=>x.id===id);
   if(!c) return;
+  showTransition();
 
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -2023,6 +2120,21 @@ function updateAccount(id, patch){
   return ME;
 }
 function initials(name){ return (name||'?').trim().charAt(0).toUpperCase() || '?'; }
+// --- Écran « Connexion… » entre deux fenêtres ---
+// Durée en millisecondes (1200 = 1,2 s). Mettre 0 pour désactiver. 20 secondes = 20000 (déconseillé sur le terrain).
+const TRANSITION_MS = 1200;
+function showTransition(label){
+  if(!TRANSITION_MS || document.getElementById('transition-loader')) return;
+  const el = document.createElement('div');
+  el.id = 'transition-loader';
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+  el.style.setProperty('--tl-ms', TRANSITION_MS + 'ms');
+  el.innerHTML = '<div class="tl-spin"></div><div class="tl-text">' + (label || 'Connexion…') + '</div><div class="tl-bar"><i></i></div>';
+  document.body.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(), 220); }, TRANSITION_MS);
+}
+const NO_TRANSITION_DIALOGS = ['auth-screen','welcome-dialog','quit-confirm','weekly-dialog','transition-loader'];
 function closeDialog(id){ const e = document.getElementById(id); if(e) e.remove(); }
 function openDialog(id, html, opts){
   closeDialog(id);
@@ -2033,6 +2145,7 @@ function openDialog(id, html, opts){
   ov.innerHTML = '<div class="dialog' + ((opts && opts.box) ? ' ' + opts.box : '') + '">' + (noBack ? '' : '<button type="button" class="back-btn" data-back aria-label="Retour">← Retour</button>') + html + '</div>';
   if(!(opts && opts.locked)) ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
+  if(!NO_TRANSITION_DIALOGS.includes(id)) showTransition();
   return ov;
 }
 function updateProfileChip(){
@@ -2580,68 +2693,8 @@ async function onSession(user, offline){
   try{ if(!localStorage.getItem('notif_hint_v1')){ localStorage.setItem('notif_hint_v1','1'); setTimeout(()=> toast('🔔 Réglez les sonneries dans « Sons & notifications »', 5000), 2500); } }catch(e){}
 }
 
-const MINI_LOGO = `<svg class="mini-logo" viewBox="88 30 200 200" role="img" aria-label="Logo Suivi chantier">
-      <rect x="98" y="48" width="200" height="200" rx="44" fill="#050F1C"/>
-      <rect x="88" y="30" width="200" height="200" rx="44" fill="#123A66"/>
-      <rect x="159" y="45" width="60" height="84" rx="9" fill="#1E4B7A" stroke="#BCD6F0" stroke-width="2"/>
-      <rect x="165" y="55" width="48" height="60" rx="3" fill="#0B2240"/>
-      <g transform="translate(112,214) rotate(-35)">
-        <rect x="0" y="-10" width="46" height="20" rx="8" fill="#F28C28"/>
-        <rect x="46" y="-3.5" width="48" height="7" fill="#8E9BA8"/>
-        <polygon points="94,-3.5 106,-2 106,2 94,3.5" fill="#C9D3DD"/>
-      </g>
-      <polyline points="197,154 204,147 199,142 210,134 206,130" fill="none" stroke="#FFD43B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      <polyline points="197,154 207,156 205,163 218,164 222,172" fill="none" stroke="#FFD43B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-const BIG_LOGO = `<svg class="splash-logo" viewBox="60 20 270 260" role="img" aria-label="Logo Suivi chantier : smartphone et tournevis avec arcs électriques">
-    <ellipse cx="196" cy="262" rx="92" ry="9" fill="#000" opacity="0.15"/>
-    <rect x="98" y="48" width="200" height="200" rx="44" fill="#050F1C"/>
-    <rect x="95" y="43" width="200" height="200" rx="44" fill="#08182B"/>
-    <rect x="92" y="38" width="200" height="200" rx="44" fill="#0B2240"/>
-    <rect x="88" y="30" width="200" height="200" rx="44" fill="#123A66"/>
-    <rect x="93" y="35" width="190" height="190" rx="40" fill="none" stroke="#3C78B5" stroke-width="2"/>
-    <rect x="168" y="56" width="60" height="84" rx="9" fill="#06101D"/>
-    <rect x="164" y="51" width="60" height="84" rx="9" fill="#0A1A2E"/>
-    <rect x="159" y="45" width="60" height="84" rx="9" fill="#1E4B7A" stroke="#BCD6F0" stroke-width="2"/>
-    <rect x="165" y="55" width="48" height="60" rx="3" fill="#0B2240"/>
-    <polyline points="170,67 173,70 178,64" fill="none" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="183" y1="67" x2="207" y2="67" stroke="#8FB3D9" stroke-width="2" stroke-linecap="round"/>
-    <polyline points="170,84 173,87 178,81" fill="none" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="183" y1="84" x2="207" y2="84" stroke="#8FB3D9" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="173" cy="101" r="3.5" fill="none" stroke="#FFD43B" stroke-width="2"/>
-    <line x1="183" y1="101" x2="203" y2="101" stroke="#8FB3D9" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="189" cy="122" r="2.5" fill="#fff"/>
-    <g transform="translate(118,222) rotate(-35)" opacity="0.28">
-      <rect x="0" y="-10" width="46" height="20" rx="8" fill="#000"/>
-      <rect x="46" y="-3.5" width="60" height="7" fill="#000"/>
-    </g>
-    <g transform="translate(112,214) rotate(-35)">
-      <rect x="0" y="-10" width="46" height="20" rx="8" fill="#F28C28"/>
-      <line x1="8" y1="-6" x2="40" y2="-6" stroke="#FFC37A" stroke-width="3" stroke-linecap="round"/>
-      <line x1="8" y1="7" x2="40" y2="7" stroke="#C96A10" stroke-width="3" stroke-linecap="round"/>
-      <line x1="14" y1="-3" x2="14" y2="4" stroke="#B85F0A" stroke-width="2" stroke-linecap="round"/>
-      <line x1="23" y1="-3" x2="23" y2="4" stroke="#B85F0A" stroke-width="2" stroke-linecap="round"/>
-      <line x1="32" y1="-3" x2="32" y2="4" stroke="#B85F0A" stroke-width="2" stroke-linecap="round"/>
-      <rect x="46" y="-3.5" width="48" height="7" fill="#8E9BA8"/>
-      <rect x="46" y="-3.5" width="48" height="2.5" fill="#E6ECF2"/>
-      <rect x="46" y="1.5" width="48" height="2" fill="#5E6B78"/>
-      <polygon points="94,-3.5 106,-2 106,2 94,3.5" fill="#C9D3DD"/>
-    </g>
-    <g class="arcs">
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="197,154 204,147 199,142 210,134 206,130" stroke="#FFD43B" stroke-width="4"/>
-        <polyline points="197,154 207,156 205,163 218,164 222,172" stroke="#FFD43B" stroke-width="4"/>
-        <polyline points="197,154 192,144 198,139 191,131" stroke="#FFD43B" stroke-width="3"/>
-        <polyline points="197,154 211,148 216,152 228,146" stroke="#FFD43B" stroke-width="3"/>
-        <polyline points="197,154 204,147 199,142 210,134 206,130" stroke="#fff" stroke-width="1.5"/>
-        <polyline points="197,154 207,156 205,163 218,164 222,172" stroke="#fff" stroke-width="1.5"/>
-      </g>
-      <circle cx="233" cy="136" r="2.5" fill="#FFD43B"/>
-      <circle cx="227" cy="180" r="2.5" fill="#FFD43B"/>
-      <circle cx="214" cy="123" r="2" fill="#FFD43B"/>
-    </g>
-    <circle cx="197" cy="154" r="4.5" fill="#fff"/>
-  </svg>`;
+const MINI_LOGO = `<svg class="mini-logo" viewBox="0 0 200 200" role="img" aria-label="Logo Suivi chantier : technicien avec casque de chantier" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path style="stroke:var(--ink)" d="M28 198 C28 164 58 150 100 150 C142 150 172 164 172 198"/><path style="stroke:var(--ink)" d="M66 94 C66 130 80 150 100 150 C120 150 134 130 134 94"/><path style="stroke:var(--rust)" d="M56 90 C56 46 76 26 100 26 C124 26 144 46 144 90"/><path style="stroke:var(--rust)" d="M40 92 H160"/><path style="stroke:var(--rust)" d="M60 92 Q100 110 140 92"/><path style="stroke:var(--rust)" d="M89 27 V80 M111 27 V80"/></svg>`;
+const BIG_LOGO = `<svg class="splash-logo" viewBox="0 0 200 200" role="img" aria-label="Logo Suivi chantier : technicien avec casque de chantier" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path style="stroke:var(--ink)" d="M28 198 C28 164 58 150 100 150 C142 150 172 164 172 198"/><path style="stroke:var(--ink)" d="M66 94 C66 130 80 150 100 150 C120 150 134 130 134 94"/><path style="stroke:var(--rust)" d="M56 90 C56 46 76 26 100 26 C124 26 144 46 144 90"/><path style="stroke:var(--rust)" d="M40 92 H160"/><path style="stroke:var(--rust)" d="M60 92 Q100 110 140 92"/><path style="stroke:var(--rust)" d="M89 27 V80 M111 27 V80"/></svg>`;
 function showSplash(){
   closeDialog('auth-screen');
   const ov = document.createElement('div');

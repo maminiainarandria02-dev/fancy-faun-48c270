@@ -1,0 +1,11 @@
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+# Sauvegardes locales de l'application
+*.bak
+*.zip
+# Ne jamais publier de secrets
+.env
+*.key

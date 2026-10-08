@@ -1,5 +1,5 @@
 // Change ce numéro à chaque mise à jour de l'application pour forcer le rafraîchissement
-const CACHE = 'chantiers-v15';
+const CACHE = 'chantiers-v18';
 const FILES = [
   './', './index.html', './manifest.json',
   './jspdf.umd.min.js', './supabase.js',
