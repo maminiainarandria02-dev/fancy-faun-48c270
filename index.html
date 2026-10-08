@@ -606,6 +606,42 @@
   @keyframes rise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
   @keyframes flicker{0%{opacity:1;} 18%{opacity:.25;} 24%{opacity:1;} 55%{opacity:.5;} 60%{opacity:1;} 82%{opacity:.2;} 88%{opacity:1;}}
   @media (prefers-reduced-motion: reduce){ .splash-logo, .auth-screen .dialog{animation:none;} .arcs{animation:none;} }
+
+  /* ===== Retour, paramètres, titre 3D ===== */
+  .back-btn{display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:999px; border:1.5px solid var(--line); background:var(--paper-2); color:var(--ink); font-weight:700; font-size:13px; cursor:pointer; font-family:inherit;}
+  .back-btn:active{transform:translateY(1px);}
+  .dialog > .back-btn:first-child{margin:-8px 0 12px;}
+  .panel-head .back-btn{background:transparent; color:var(--paper); border-color:currentColor; margin-right:10px; padding:6px 11px; flex-shrink:0;}
+  .panel-head h2{flex:1; min-width:0;}
+  .chat-head .back-btn{padding:6px 11px; flex-shrink:0;}
+  .top-back{display:none;}
+  body.has-view .top-back{display:inline-flex;}
+  .brand-plate{display:inline-flex; align-items:center; gap:12px; background:linear-gradient(180deg,#16477A 0%,#0B1B30 100%); border:1px solid #25456E; border-radius:18px; padding:9px 18px 13px 14px; box-shadow:0 4px 0 #050F1C, 0 10px 20px rgba(0,0,0,.30); max-width:100%;}
+  .brand-logo{display:block; width:42px; height:42px; flex-shrink:0;}
+  .brand-logo svg{width:100%; height:100%; margin:0; display:block;}
+  .title3d{font-family:'Space Grotesk',sans-serif; font-weight:800; letter-spacing:.4px; margin:0; line-height:1.05; color:#F28C28;
+    text-shadow:0 1px 0 #DE7C1B, 0 2px 0 #CC6B10, 0 3px 0 #B85F0A, 0 4px 0 #A55408, 0 5px 0 #8A4708, 0 7px 6px rgba(0,0,0,.45), 0 12px 18px rgba(0,0,0,.30);}
+  .brand-plate h1.title3d{font-size:clamp(22px,5.4vw,34px);}
+  .brand-plate .sub{color:#9DB4CF; margin-top:7px; font-size:11.5px;}
+  .splash h1.title3d{font-size:clamp(30px,9vw,42px); color:#F28C28; margin:10px 0 8px;}
+  .set-sec{font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin:16px 0 8px;}
+  .set-row{display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; border:1.5px solid var(--line); border-radius:14px; background:var(--white); color:var(--ink); font-size:14px; text-align:left; margin-bottom:8px; cursor:pointer; font-family:inherit;}
+  .set-row:active{transform:translateY(1px);}
+  .set-row small{display:block; color:var(--ink-soft); font-weight:500; font-size:11.5px; margin-top:1px;}
+  .set-ico{width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--paper-2); font-size:17px; flex-shrink:0;}
+  .seg.neutral button.on{border-color:var(--rust); color:var(--rust-dark); box-shadow:0 0 0 1.5px var(--rust) inset;}
+  .dialog-overlay.quit-screen{background:#0B1B30; color:#EAF1F9; flex-direction:column; text-align:center; z-index:500;}
+  .dialog-overlay.quit-screen .splash-logo{width:min(220px,60vw);}
+  .dialog-overlay.quit-screen h2{font-size:24px; margin:12px 0 6px; color:#EAF1F9;}
+  .dialog-overlay.quit-screen p{max-width:340px; color:#9DB4CF; font-size:14px; line-height:1.55; margin:0 0 22px;}
+  @media(max-width:600px){ .brand-plate{padding:8px 14px 12px 10px; gap:9px;} .brand-logo{width:34px; height:34px;} }
+
+  /* ===== Photos de profil ===== */
+  .av{display:inline-flex; align-items:center; justify-content:center; border-radius:50%; overflow:hidden; background:var(--rust); color:var(--on-accent); font-weight:700; font-family:'Space Grotesk',sans-serif; flex-shrink:0; vertical-align:middle;}
+  .av img, .avatar img, .avatar-big img{width:100%; height:100%; object-fit:cover; display:block;}
+  .side-profile .avatar{overflow:hidden;}
+  .avatar-big{width:88px !important; height:88px !important; font-size:34px !important; overflow:hidden; cursor:pointer; border:3px solid var(--line);}
+  .msg .who{display:flex; align-items:center; gap:6px;}
 </style>
 </head>
 <body>
@@ -656,6 +692,7 @@
     </nav>
 
     <div class="side-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-settings">⚙ Paramètres</button>
       <button class="btn btn-ghost btn-sm" id="btn-reminder">🔔 Rappel de la semaine</button>
       <button class="btn btn-ghost btn-sm" id="btn-notif">🔊 Sons &amp; notifications</button>
       <button class="btn btn-ghost btn-sm admin-only" id="btn-admin">🛡 Administration</button>
@@ -678,13 +715,18 @@
 
   <main class="app">
     <header class="topbar">
+      <button class="back-btn top-back" id="top-back" type="button" data-back aria-label="Retour">← Retour</button>
       <div class="brand-mark">
-        <div>
-          <h1>Suivi de chantier et installation</h1>
-          <div class="sub" id="top-date"></div>
+        <div class="brand-plate">
+          <span class="brand-logo" id="brand-logo"></span>
+          <div>
+            <h1 class="title3d">Suivi de chantier</h1>
+            <div class="sub"><span>et installation</span> · <span id="top-date"></span></div>
+          </div>
         </div>
       </div>
       <div class="top-actions">
+        <button class="btn btn-sm" id="top-settings">⚙ Paramètres</button>
         <button class="btn btn-sm" id="top-planning">📅 Planning</button>
         <button class="btn btn-sm btn-primary" id="top-maint">+ Maintenance</button>
         <button class="btn btn-sm btn-primary" id="top-fiche">🛠 Fiche après travaux</button>
@@ -1070,6 +1112,7 @@ function renderOverview(){
 }
 
 function render(){
+  try{ syncViewEntry(); }catch(e){}
   renderOverview();
   document.getElementById('view-chantiers').style.display = currentView === 'chantiers' ? 'block' : 'none';
   document.getElementById('view-sav').style.display = currentView === 'sav' ? 'block' : 'none';
@@ -1357,6 +1400,7 @@ function openSavModal(){
   overlay.innerHTML = `
     <div class="panel" style="width:min(480px,100%);">
       <div class="panel-head">
+        <button type="button" class="back-btn" data-back aria-label="Retour">←</button>
         <h2>Nouvelle intervention SAV</h2>
         <button class="close-x" id="sav-modal-close">&times;</button>
       </div>
@@ -1442,6 +1486,7 @@ function openPanel(id, isNew){
   overlay.innerHTML = `
     <div class="panel">
       <div class="panel-head">
+        <button type="button" class="back-btn" data-back aria-label="Retour">←</button>
         <h2>${isNew ? 'Nouveau chantier' : escapeHtml(c.site || 'Chantier')}</h2>
         <div style="display:flex; align-items:center; gap:10px;">
           <button class="btn btn-sm" id="btn-chat-c" style="display:none;">💬 Discussion</button>
@@ -1984,7 +2029,8 @@ function openDialog(id, html, opts){
   const ov = document.createElement('div');
   ov.className = 'dialog-overlay' + ((opts && opts.cls) ? ' ' + opts.cls : '');
   ov.id = id;
-  ov.innerHTML = '<div class="dialog' + ((opts && opts.box) ? ' ' + opts.box : '') + '">' + html + '</div>';
+  const noBack = (opts && opts.noBack) || id === 'auth-screen' || id === 'welcome-dialog';
+  ov.innerHTML = '<div class="dialog' + ((opts && opts.box) ? ' ' + opts.box : '') + '">' + (noBack ? '' : '<button type="button" class="back-btn" data-back aria-label="Retour">← Retour</button>') + html + '</div>';
   if(!(opts && opts.locked)) ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
   return ov;
@@ -1992,7 +2038,7 @@ function openDialog(id, html, opts){
 function updateProfileChip(){
   const av = document.getElementById('sp-avatar'), nm = document.getElementById('sp-name');
   if(!av || !nm) return;
-  av.textContent = ME ? initials(ME.name) : '?';
+  if(ME && ME.avatar) av.innerHTML = '<img src="' + ME.avatar + '" alt="">'; else av.textContent = ME ? initials(ME.name) : '?';
   nm.textContent = ME ? ME.name : 'Mon profil';
 }
 function frError(e){
@@ -2286,8 +2332,9 @@ function renderTeamSection(box, ov){
     const list = box.querySelector('#tm-list'); if(!list) return;
     const { data, error } = await sb.from('team_members').select('user_id,role,display_name').eq('team_id', TEAM.id);
     if(error){ list.textContent = frError(error); return; }
-    list.innerHTML = data.map(m=>`<div class="rem-item" style="display:flex;justify-content:space-between;align-items:center;cursor:default;">
-      <span>${escapeHtml(m.display_name)}${m.user_id === ME.id ? ' (vous)' : ''}<small>${m.role === 'admin' ? 'Administrateur' : 'Membre'}</small></span>
+    await loadAvatars(data.map(m=>m.user_id));
+    list.innerHTML = data.map(m=>`<div class="rem-item" style="display:flex;justify-content:space-between;align-items:center;cursor:default;gap:8px;">
+      <span style="display:flex;align-items:center;gap:10px;">${avatarHTML(m.user_id, m.display_name, 32)}<span>${escapeHtml(m.display_name)}${m.user_id === ME.id ? ' (vous)' : ''}<small>${m.role === 'admin' ? 'Administrateur' : 'Membre'}</small></span></span>
       ${admin && m.user_id !== ME.id ? `<span style="display:flex;gap:12px;flex-wrap:wrap;"><button class="linkbtn" data-role="${m.user_id}" data-to="${m.role === 'admin' ? 'member' : 'admin'}">${m.role === 'admin' ? 'Rendre membre' : 'Nommer admin'}</button><button class="linkbtn" data-rm="${m.user_id}" style="color:var(--danger);">Retirer</button></span>` : ''}</div>`).join('');
     list.querySelectorAll('[data-rm]').forEach(b=> b.addEventListener('click', async ()=>{
       if(!confirm('Retirer ce membre de l\'équipe ?')) return;
@@ -2436,7 +2483,8 @@ function openChat(channel){
       `<option value="${escapeHtml(c.id)}">🏗 ${escapeHtml(c.site || 'Sans nom')}${c.client ? ' — ' + escapeHtml(c.client) : ''}${unread[c.id] ? ' (' + unread[c.id] + ')' : ''}</option>`));
   const ov = openDialog('chat-dialog', `
     <div class="chat-head">
-      <div><h2>💬 Discussion</h2><div class="muted" style="margin:0;font-size:11.5px;">${escapeHtml(TEAM.name)}</div></div>
+      <button type="button" class="back-btn" data-back aria-label="Retour">←</button>
+      <div style="flex:1;min-width:0;"><h2>💬 Discussion</h2><div class="muted" style="margin:0;font-size:11.5px;">${escapeHtml(TEAM.name)}</div></div>
       <select id="ch-select">${opts.join('')}</select>
       <button class="close-x" id="ch-close" style="color:var(--ink);font-size:26px;">&times;</button>
     </div>
@@ -2444,7 +2492,7 @@ function openChat(channel){
     <div class="chat-input">
       <textarea id="ch-text" rows="1" placeholder="Écrire un message…"></textarea>
       <button class="btn btn-primary" id="ch-send">Envoyer</button>
-    </div>`, { cls:'chat-ov', box:'chat-box' });
+    </div>`, { cls:'chat-ov', box:'chat-box', noBack:true });
   const sel = ov.querySelector('#ch-select'); sel.value = chatChannel;
   sel.addEventListener('change', ()=>{ chatChannel = sel.value; renderChat(); loadChannelHistory(chatChannel); });
   ov.querySelector('#ch-close').addEventListener('click', ()=>{ ov.remove(); updateChatUI(); });
@@ -2469,7 +2517,7 @@ function renderChat(){
       const mine = m.user_id === ME.id;
       const canDel = mine || TEAM.role === 'admin';
       html += `<div class="msg ${mine ? 'me' : ''}">
-        <div class="who" style="${mine ? '' : 'color:' + authorColor(m.user_id)}">${mine ? 'Vous' : escapeHtml(m.author_name)}<span class="when">${fmtHour(msgMs(m))}</span>${canDel ? `<button class="msg-del" data-id="${m.id}" title="Supprimer">🗑</button>` : ''}</div>
+        <div class="who" style="${mine ? '' : 'color:' + authorColor(m.user_id)}">${avatarHTML(m.user_id, mine ? ME.name : m.author_name, 20)}<span>${mine ? 'Vous' : escapeHtml(m.author_name)}</span><span class="when">${fmtHour(msgMs(m))}</span>${canDel ? `<button class="msg-del" data-id="${m.id}" title="Supprimer">🗑</button>` : ''}</div>
         ${escapeHtml(m.body)}</div>`;
     });
     list.innerHTML = html;
@@ -2480,6 +2528,8 @@ function renderChat(){
       chatMsgs = chatMsgs.filter(x=>x.id !== b.dataset.id); renderChat(); updateChatUI();
     }));
   }
+  const missing = [...new Set(msgs.map(m=>m.user_id))].filter(id=> id !== ME.id && !(id in avatarCache));
+  if(missing.length) loadAvatars(missing).then(()=>{ if(document.getElementById('ch-list')) renderChat(); });
   const title = document.querySelector('#chat-dialog .chat-head h2');
   if(title) title.textContent = '💬 ' + (chatChannel === 'general' ? 'Discussion' : channelTitle(chatChannel));
   if(atBottom || list.dataset.init !== chatChannel){ list.scrollTop = list.scrollHeight; list.dataset.init = chatChannel; }
@@ -2516,6 +2566,8 @@ async function onSession(user, offline){
   updateProfileChip();
   await loadMembership();
   await loadPlatformAdmin();
+  try{ await loadMyAvatar(); }catch(e){}
+  if(TEAM && !ME.offline) loadTeamAvatars().catch(()=>{});
   if(reconcileScope() === false) ME.offline = true;   // mode dégradé : pas de synchronisation
   if(!ME.offline){
     startRealtime(); startPoll();
@@ -2594,9 +2646,10 @@ function showSplash(){
   closeDialog('auth-screen');
   const ov = document.createElement('div');
   ov.className = 'dialog-overlay auth-screen splash'; ov.id = 'auth-screen';
-  ov.innerHTML = BIG_LOGO + '<h1>Suivi chantier</h1><p class="splash-sub">Application de terrain</p><button class="btn btn-primary splash-btn" id="splash-go" type="button">Se connecter</button>';
+  ov.innerHTML = BIG_LOGO + '<h1 class="title3d">Suivi chantier</h1><p class="splash-sub">Application de terrain</p><button class="btn btn-primary splash-btn" id="splash-go" type="button">Se connecter</button><button class="linkbtn" id="splash-quit" type="button" style="margin-top:14px;">Quitter l\'application</button>';
   document.body.appendChild(ov);
   ov.querySelector('#splash-go').addEventListener('click', ()=> showAuth('login'));
+  ov.querySelector('#splash-quit').addEventListener('click', ()=> quitApp());
   try{ ov.querySelector('#splash-go').focus(); }catch(e){}
 }
 
@@ -2605,6 +2658,7 @@ function showAuth(mode, notice){
   mode = mode || 'login';
   const signup = mode === 'signup';
   const ov = openDialog('auth-screen', `
+    <button type="button" class="back-btn" id="au-back" aria-label="Retour">← Retour</button>
     ${MINI_LOGO}
     <h2>${signup ? 'Créer un compte' : 'Connexion'}</h2>
     <p class="muted" style="margin:0;">${signup ? 'Créez votre compte pour accéder à votre espace.' : 'Accédez à vos chantiers'}</p>
@@ -2621,9 +2675,12 @@ function showAuth(mode, notice){
     <div class="auth-err" id="au-err"></div>
     <button class="btn btn-primary" id="au-go" style="width:100%;">${signup ? 'Créer mon compte' : 'Se connecter'}</button>
     <div class="auth-note">Votre compte et vos chantiers sont enregistrés en ligne : vous les retrouvez sur tous vos appareils.</div>
+    <div style="text-align:center;margin-top:8px;"><button type="button" class="linkbtn" id="au-quit">Quitter l'application</button></div>
   `, {cls:'auth-screen', locked:true, box:'auth-box'});
   ov.querySelectorAll('.auth-tabs button').forEach(b=> b.addEventListener('click', ()=> showAuth(b.dataset.m)));
   const fg = ov.querySelector('#au-forgot'); if(fg) fg.addEventListener('click', ()=> showForgot());
+  ov.querySelector('#au-back').addEventListener('click', ()=> showSplash());
+  ov.querySelector('#au-quit').addEventListener('click', ()=> quitApp());
   const err = m => { ov.querySelector('#au-err').textContent = m; };
   const btn = ov.querySelector('#au-go');
   const go = async ()=>{
@@ -2756,6 +2813,7 @@ async function logout(){
   if(sb && ME && !ME.offline){ try{ await Promise.race([syncAll(), new Promise(r=>setTimeout(r,4000))]); }catch(e){} }
   try{ if(sb) await sb.auth.signOut(); }catch(e){}
   stopRealtime(); stopPoll();
+  Object.keys(avatarCache).forEach(k=> delete avatarCache[k]);
   ME = null; TEAM = null; teamReady = false; chatMsgs = []; chatLoaded = new Set(); syncState = 'idle'; syncAt = 0;
   closeDialog('chat-dialog'); closeDialog('team-dialog'); closeDialog('admin-dialog');
   applyRoleUI();
@@ -2770,7 +2828,12 @@ function showProfile(){
   const a = currentAccount(); if(!a) return showAuth('login');
   const ov = openDialog('profile-dialog', `
     <div style="text-align:center;">
-      <div class="avatar-big">${escapeHtml(initials(a.name))}</div>
+      <div class="avatar-big" id="pf-avatar" title="Changer la photo">${a.avatar ? `<img src="${a.avatar}" alt="">` : escapeHtml(initials(a.name))}</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin:0 0 10px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-sm" id="pf-photo">📷 ${a.avatar ? 'Changer la photo' : 'Ajouter une photo'}</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="pf-photo-del" ${a.avatar ? '' : 'style="display:none"'}>Supprimer</button>
+      </div>
+      <input type="file" id="pf-file" accept="image/*" style="display:none">
       <h2>Mon profil</h2>
       <p class="muted" style="margin-bottom:2px;">${escapeHtml(a.email)}</p>
       <p class="muted" id="pf-sync" style="margin-bottom:6px;font-size:11.5px;">${escapeHtml(syncLabel())}</p>
@@ -2793,6 +2856,22 @@ function showProfile(){
       <button class="btn" id="pf-close">Fermer</button>
     </div>`);
   ov.querySelector('#pf-close').addEventListener('click', ()=> ov.remove());
+  const refreshAv = ()=>{
+    ov.querySelector('#pf-avatar').innerHTML = ME.avatar ? '<img src="' + ME.avatar + '" alt="">' : escapeHtml(initials(ME.name));
+    ov.querySelector('#pf-photo').textContent = '📷 ' + (ME.avatar ? 'Changer la photo' : 'Ajouter une photo');
+    ov.querySelector('#pf-photo-del').style.display = ME.avatar ? '' : 'none';
+  };
+  ov.querySelector('#pf-avatar').addEventListener('click', ()=> ov.querySelector('#pf-file').click());
+  ov.querySelector('#pf-photo').addEventListener('click', ()=> ov.querySelector('#pf-file').click());
+  ov.querySelector('#pf-file').addEventListener('change', async e=>{
+    const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+    try{
+      const data = await makeAvatar(f);
+      const ok = await saveMyAvatar(data); refreshAv();
+      toast(ok ? 'Photo de profil enregistrée' : 'Photo enregistrée sur cet appareil (pas encore en ligne)', ok ? 2200 : 4200);
+    }catch(err){ toast('Image illisible, essayez une autre photo'); }
+  });
+  ov.querySelector('#pf-photo-del').addEventListener('click', async ()=>{ await saveMyAvatar(null); refreshAv(); toast('Photo supprimée'); });
   renderTeamSection(ov.querySelector('#pf-team'), ov);
   ov.querySelector('#pf-logout').addEventListener('click', logout);
   ov.querySelector('#pf-reminder').addEventListener('click', ()=>{ ov.remove(); showReminderSettings(); });
@@ -3654,6 +3733,236 @@ function showNotifSettings(){
   });
 }
 document.getElementById('btn-notif').addEventListener('click', showNotifSettings);
+
+
+// ===== Navigation : bouton Retour partout =====
+const APP_VERSION = '14';
+const winStack = [];
+let histDepth = 0, lastRootBack = 0, viewEntry = null;
+const isWinEl = n => n && n.nodeType === 1 && !n.classList.contains('auth-screen') && (n.classList.contains('overlay') || n.classList.contains('dialog-overlay'));
+const isLive = x => x === viewEntry ? currentView !== 'chantiers' : document.body.contains(x);
+function pruneStack(){ for(let i = winStack.length - 1; i >= 0; i--){ if(!isLive(winStack[i])) winStack.splice(i, 1); } }
+let histBusy = false, histTimer = null, busyTimer = null;
+function syncHistory(){ clearTimeout(histTimer); histTimer = setTimeout(doSyncHistory, 25); }
+function doSyncHistory(){
+  if(histBusy){ histTimer = setTimeout(doSyncHistory, 40); return; }
+  pruneStack();
+  const target = winStack.length;
+  if(target > histDepth){
+    for(let i = histDepth + 1; i <= target; i++){ try{ history.pushState({ w:i }, ''); }catch(e){} }
+    histDepth = target;
+  }else if(target < histDepth){
+    const n = histDepth - target;
+    histDepth = target; histBusy = true;
+    clearTimeout(busyTimer); busyTimer = setTimeout(()=>{ histBusy = false; }, 500);
+    try{ history.go(-n); }catch(e){ histBusy = false; }
+  }
+}
+function syncViewEntry(){
+  if(currentView !== 'chantiers' && !viewEntry){ viewEntry = { view:true }; winStack.push(viewEntry); }
+  else if(currentView === 'chantiers' && viewEntry){ const i = winStack.indexOf(viewEntry); if(i >= 0) winStack.splice(i, 1); viewEntry = null; }
+  document.body.classList.toggle('has-view', !!viewEntry);
+  syncHistory();
+}
+function goHomeView(){ const chip = document.querySelector('.filter-chip[data-view="chantiers"][data-f="tous"]'); if(chip) chip.click(); }
+function closeTop(){
+  pruneStack();
+  const top = winStack.pop(); if(!top) return false;
+  if(top === viewEntry){ viewEntry = null; goHomeView(); document.body.classList.remove('has-view'); return true; }
+  if(top.id === 'overlay') closePanel(); else top.remove();
+  return true;
+}
+function goBack(){
+  pruneStack();
+  if(winStack.length){ history.back(); return true; }
+  return false;
+}
+function authBack(){
+  const ov = document.getElementById('auth-screen'); if(!ov || ov.classList.contains('splash')) return false;
+  if(ov.querySelector('#fg-email')){ showAuth('login'); return true; }
+  if(ov.querySelector('#np-1')) return true;
+  if(ov.querySelector('#au-email')){ showSplash(); return true; }
+  return false;
+}
+function confirmQuit(){
+  const ov = openDialog('quit-confirm', `
+    <h2>Quitter l'application ?</h2>
+    <p class="muted">Vos données restent enregistrées.</p>
+    <div class="row-btns"><button class="btn" id="qc-no">Annuler</button><button class="btn btn-danger" id="qc-yes">Quitter</button></div>`, { noBack:true });
+  ov.querySelector('#qc-no').addEventListener('click', ()=> ov.remove());
+  ov.querySelector('#qc-yes').addEventListener('click', ()=>{ ov.remove(); quitApp(); });
+}
+function onRootBack(){
+  const stay = ()=>{ try{ history.pushState({ w:0 }, ''); }catch(e){} histDepth = 0; };
+  if(!ME){
+    stay();
+    if(!authBack() && !document.getElementById('quit-confirm') && !document.getElementById('quit-screen')) confirmQuit();
+    return;
+  }
+  const now = Date.now();
+  if(now - lastRootBack < 2500){ lastRootBack = 0; try{ history.back(); }catch(e){} return; }
+  lastRootBack = now; stay();
+  toast('Appuyez encore sur Retour pour quitter', 2400);
+}
+window.addEventListener('popstate', e=>{
+  if(histBusy){ histBusy = false; clearTimeout(busyTimer); syncHistory(); return; }
+  const st = e.state || {};
+  if(st.base){ onRootBack(); return; }
+  if(typeof st.w !== 'number') return;
+  histDepth = st.w;
+  pruneStack();
+  while(winStack.length > st.w){ if(!closeTop()) break; }
+  syncHistory();
+});
+new MutationObserver(muts=>{
+  muts.forEach(m=> m.addedNodes.forEach(n=>{ if(isWinEl(n) && !winStack.includes(n)) winStack.push(n); }));
+  syncHistory();
+}).observe(document.body, { childList:true });
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-back]');
+  if(b){ e.preventDefault(); goBack(); }
+});
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') goBack(); });
+try{ history.replaceState({ base:1 }, ''); history.pushState({ w:0 }, ''); }catch(e){}
+
+// --- Quitter l'application ---
+function quitApp(){
+  try{ window.close(); }catch(e){}
+  setTimeout(showQuitScreen, 350);
+}
+function showQuitScreen(){
+  if(document.getElementById('quit-screen')) return;
+  const ov = document.createElement('div');
+  ov.id = 'quit-screen'; ov.className = 'dialog-overlay quit-screen';
+  ov.innerHTML = BIG_LOGO + `<h2>À bientôt !</h2><p>Votre téléphone ne permet pas à l'application de se fermer toute seule. Pour la quitter, utilisez le bouton Accueil de votre téléphone (ou le geste pour revenir à l'écran d'accueil).</p><button class="btn btn-primary" id="quit-back" type="button">Revenir à l'application</button>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#quit-back').addEventListener('click', ()=> ov.remove());
+}
+
+// --- Titre 3D : logo dans l'en-tête ---
+document.getElementById('brand-logo').innerHTML = MINI_LOGO;
+
+// ===== Paramètres : toutes les options au même endroit =====
+function showSettings(){
+  const th = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  const p = getNotifPrefs();
+  const row = (id, ico, title, sub)=>`<button type="button" class="set-row" data-set="${id}"><span class="set-ico">${ico}</span><span style="flex:1;min-width:0;"><b>${title}</b>${sub ? '<small>' + esc(sub) + '</small>' : ''}</span><span aria-hidden="true">›</span></button>`;
+  const admin = canBackup()
+    ? `<div class="set-sec">Administration</div>${row('admin','🛡','Administration','Équipes et comptes')}${row('export','⬇','Sauvegarder les données','')}${row('import','⬆','Restaurer une sauvegarde','')}${row('link','🔗','Fichier lié','Enregistrement automatique')}`
+    : '';
+  const ov = openDialog('settings-dialog', `
+    <h2>⚙ Paramètres</h2>
+    <p class="muted">Toutes vos options au même endroit.</p>
+    <div class="set-sec">Apparence</div>
+    <div class="seg neutral" id="st-theme"><button type="button" data-th="dark" class="${th === 'dark' ? 'on' : ''}">🌙 Sombre</button><button type="button" data-th="light" class="${th === 'light' ? 'on' : ''}">☀ Clair</button></div>
+    <div class="set-sec">Sonnerie</div>
+    <label class="chk"><input type="checkbox" id="st-sound" ${p.sound ? 'checked' : ''}> Sonneries activées</label>
+    <div class="fld"><label>Volume</label><select id="st-vol"><option value="0.5">Faible</option><option value="1">Normal</option><option value="1.6">Fort</option></select></div>
+    ${row('notif','🔊','Sons & notifications','Messages, chantiers, SAV, rappels')}
+    <div class="set-sec">Compte et équipe</div>
+    ${row('profile','👤','Mon profil', ME ? ME.email : '')}
+    ${TEAM ? row('chat','💬','Discussion de l\'équipe', TEAM.name) : ''}
+    ${row('week','🔔','Rappel de la semaine','Récapitulatif hebdomadaire')}
+    <div class="set-sec">Travail</div>
+    ${row('planning','📅','Planning & maintenance','Calendrier')}
+    ${row('maint','🔧','Planifier une maintenance','Préventive ou corrective')}
+    ${row('fiche','🛠','Fiche après travaux','Compte rendu et photos')}
+    ${admin}
+    <div class="set-sec">Application</div>
+    ${row('about','ℹ️','À propos','Version ' + APP_VERSION)}
+    ${row('logout','🚪','Se déconnecter','')}
+    ${row('quit','✖','Quitter l\'application','')}
+    <div class="row-btns"><button class="btn btn-primary" data-back>Fermer</button></div>`, { box:'wide' });
+  const q = id => ov.querySelector(id);
+  q('#st-vol').value = String(p.vol || 1);
+  ov.querySelectorAll('#st-theme [data-th]').forEach(b=> b.addEventListener('click', ()=>{
+    applyTheme(b.dataset.th);
+    ov.querySelectorAll('#st-theme [data-th]').forEach(x=> x.classList.toggle('on', x === b));
+  }));
+  const savePrefs = ()=> setNotifPrefs(Object.assign({}, getNotifPrefs(), { sound:q('#st-sound').checked, vol:parseFloat(q('#st-vol').value) || 1 }));
+  q('#st-sound').addEventListener('change', savePrefs);
+  q('#st-vol').addEventListener('change', ()=>{ savePrefs(); playSound('ok'); });
+  ov.querySelectorAll('[data-set]').forEach(b=> b.addEventListener('click', ()=>{
+    const a = b.dataset.set;
+    if(a === 'about'){ toast('Suivi chantier — version ' + APP_VERSION, 3000); return; }
+    ov.remove();
+    if(a === 'notif') showNotifSettings();
+    else if(a === 'profile') showProfile();
+    else if(a === 'chat') openChat('general');
+    else if(a === 'week') showReminderSettings();
+    else if(a === 'planning') goPlanning();
+    else if(a === 'maint') openMaintDialog({ date: todayISO() });
+    else if(a === 'fiche') openFicheDialog({});
+    else if(a === 'admin') showAdminPanel();
+    else if(a === 'export') exportBackup();
+    else if(a === 'import'){ if(canBackup()) document.getElementById('import-input').click(); }
+    else if(a === 'link') document.getElementById('btn-link-file').click();
+    else if(a === 'logout') logout();
+    else if(a === 'quit') quitApp();
+  }));
+}
+document.getElementById('top-settings').addEventListener('click', showSettings);
+document.getElementById('btn-settings').addEventListener('click', showSettings);
+
+
+// ===== Photos de profil =====
+const avatarCache = {};
+const avKey = id => 'chantiers_avatar_' + id;
+function avatarOf(uid){ if(ME && uid === ME.id) return ME.avatar || null; return avatarCache[uid] || null; }
+function avatarHTML(uid, name, size){
+  const a = avatarOf(uid);
+  return `<span class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.45)}px;">${a ? `<img src="${a}" alt="">` : escapeHtml(initials(name || '?'))}</span>`;
+}
+async function loadAvatars(ids){
+  if(!sb || !ME || ME.offline) return;
+  const need = [...new Set(ids)].filter(id=> id !== ME.id && !(id in avatarCache));
+  if(!need.length) return;
+  const r = await sb.from('profiles').select('user_id,avatar').in('user_id', need);
+  need.forEach(id=>{ avatarCache[id] = null; });
+  if(!r.error) (r.data || []).forEach(row=>{ avatarCache[row.user_id] = row.avatar || null; });
+}
+async function loadTeamAvatars(){
+  if(!TEAM) return;
+  const r = await sb.from('team_members').select('user_id').eq('team_id', TEAM.id);
+  if(!r.error) await loadAvatars((r.data || []).map(x=>x.user_id));
+}
+function makeAvatar(file, size){
+  size = size || 192;
+  return new Promise((resolve, reject)=>{
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = ()=>{
+      try{
+        const side = Math.min(img.width, img.height), sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+        const cv = document.createElement('canvas'); cv.width = cv.height = size;
+        const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        URL.revokeObjectURL(url); resolve(cv.toDataURL('image/jpeg', 0.82));
+      }catch(e){ reject(e); }
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('image')); };
+    img.src = url;
+  });
+}
+async function saveMyAvatar(dataUrl){
+  ME.avatar = dataUrl || null;
+  try{ if(dataUrl) localStorage.setItem(avKey(ME.id), dataUrl); else localStorage.removeItem(avKey(ME.id)); }catch(e){}
+  updateProfileChip(); try{ updateChatUI(); }catch(e){}
+  if(!sb || ME.offline) return false;
+  const r = dataUrl
+    ? await sb.from('profiles').upsert({ user_id:ME.id, avatar:dataUrl, updated_at:new Date().toISOString() }, { onConflict:'user_id' })
+    : await sb.from('profiles').delete().eq('user_id', ME.id);
+  return !r.error;
+}
+async function loadMyAvatar(){
+  try{ const c = localStorage.getItem(avKey(ME.id)); if(c) ME.avatar = c; }catch(e){}
+  if(!sb || ME.offline){ updateProfileChip(); return; }
+  const r = await sb.from('profiles').select('avatar').eq('user_id', ME.id).maybeSingle();
+  if(!r.error){
+    if(r.data && r.data.avatar){ ME.avatar = r.data.avatar; try{ localStorage.setItem(avKey(ME.id), ME.avatar); }catch(e){} }
+    else if(ME.avatar){ sb.from('profiles').upsert({ user_id:ME.id, avatar:ME.avatar, updated_at:new Date().toISOString() }, { onConflict:'user_id' }).then(()=>{}); }
+  }
+  updateProfileChip();
+}
 
 loadAll().then(startApp);
 
